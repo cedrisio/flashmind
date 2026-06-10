@@ -5,15 +5,286 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Number Flash — FlashMind</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+
+    html, body { height: 100%; }
+    .screen { display: flex; flex-direction: column; }
+
+    /* ── intro ── */
+    #screen-intro {
+      min-height: calc(100vh - 60px);
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+    }
+
+    .intro-inner { max-width: 480px; width: 100%; }
+
+    .game-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .intro-title {
+      font-size: clamp(1.8rem, 6vw, 2.6rem);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+
+    .intro-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+
+    /* ── game screen (full-height flex column) ── */
+    #screen-game {
+      height: calc(100vh - 60px);
+      overflow: hidden;
+    }
+
+    /* stats row */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.65rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .stats-bar .stat-chip .value { font-size: 1.05rem; }
+    .stat-chip-score { margin-left: auto; }
+    .stat-chip-score .value { color: var(--text); }
+
+    /* thin timer bar between stats and arena */
+    #timer-bar {
+      height: 3px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    #timer-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--accent);
+    }
+
+    /* arena fills remaining height */
+    #arena {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* phase label — "memorize" / "recall" */
+    #phase-label {
+      position: absolute;
+      top: 0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      pointer-events: none;
+      z-index: 5;
+      white-space: nowrap;
+    }
+
+    /* ── numbered circles (visible during flash) ── */
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      user-select: none;
+      pointer-events: none;
+      animation: circle-pop 0.2s ease forwards;
+    }
+
+    @keyframes circle-pop {
+      from { opacity: 0; transform: scale(0.6); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* ── clickable zones (invisible during recall) ── */
+    .circle-zone {
+      position: absolute;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px dashed rgba(240, 165, 0, 0.18);
+      transition: border-color 0.12s, background 0.12s;
+      touch-action: manipulation;
+    }
+
+    .circle-zone:hover {
+      border-color: rgba(240, 165, 0, 0.5);
+      background: rgba(240, 165, 0, 0.06);
+    }
+
+    .circle-zone.clicked {
+      border-color: var(--success);
+      background: rgba(74, 204, 138, 0.15);
+      pointer-events: none;
+      animation: zone-ok 0.3s ease forwards;
+    }
+
+    @keyframes zone-ok {
+      0%   { transform: scale(1);   opacity: 1; }
+      60%  { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1.1); opacity: 0; }
+    }
+
+    /* arena flash feedback */
+    #arena.flash-ok    { animation: a-ok    0.55s ease; }
+    #arena.flash-wrong { animation: a-wrong 0.4s  ease; }
+
+    @keyframes a-ok    { 0%,100%{background:transparent} 40%{background:rgba(74,204,138,0.08)} }
+    @keyframes a-wrong { 0%,100%{background:transparent} 35%{background:rgba(224,80,80,0.14)} }
+
+    /* ── result screen ── */
+    #screen-result {
+      min-height: calc(100vh - 60px);
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+    }
+
+    .result-inner { max-width: 380px; width: 100%; text-align: center; }
+
+    .result-eyebrow {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .result-big {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(4rem, 18vw, 6.5rem);
+      font-weight: 600;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .result-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+
+    .result-best {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    .result-best span {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .result-actions { display: flex; gap: 0.75rem; justify-content: center; }
+
+  </style>
 </head>
 <body>
+
   <nav class="navbar">
     <a href="index.html" class="logo">flash<span class="logo-dim">mind</span></a>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--muted);">
+      number flash
+    </span>
   </nav>
-  <main class="container" style="padding-top:4rem;text-align:center;">
-    <p class="text-muted">game 1 coming soon — scaffold only</p>
-    <a href="index.html" class="btn btn-ghost" style="margin-top:1.5rem;">← back</a>
-  </main>
+
+  <!-- ══════════════════ INTRO ══════════════════ -->
+  <div id="screen-intro" class="screen">
+    <div class="intro-inner">
+
+      <p class="game-label">game 01</p>
+      <h1 class="intro-title">Number Flash</h1>
+
+      <div class="how-to-play">
+        <h3>how to play</h3>
+        <ol>
+          <li><strong>Memorize</strong> — numbered circles appear briefly. Track their positions.</li>
+          <li><strong>Recall</strong> — circles vanish. Click the zones in order: 1 → 2 → 3…</li>
+          <li><strong>Progress</strong> — each round adds one circle and shortens the flash time.</li>
+          <li><strong>Survive</strong> — one wrong click ends the run. No upper limit on circles.</li>
+        </ol>
+      </div>
+
+      <div class="intro-actions">
+        <button id="btn-start" class="btn btn-primary">Start</button>
+        <a href="index.html" class="btn btn-outline">Back</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════ GAME ══════════════════ -->
+  <div id="screen-game" class="screen hidden">
+
+    <div class="stats-bar">
+      <div class="stat-chip">
+        <span class="value" id="stat-level">1</span>
+        <span class="label">level</span>
+      </div>
+      <div class="stat-chip">
+        <span class="value" id="stat-count">2</span>
+        <span class="label">circles</span>
+      </div>
+      <div class="stat-chip">
+        <span class="value" id="stat-speed">2.0s</span>
+        <span class="label">flash</span>
+      </div>
+      <div class="stat-chip stat-chip-score">
+        <span class="value" id="stat-score">0</span>
+        <span class="label">score</span>
+      </div>
+    </div>
+
+    <div id="timer-bar" class="hidden">
+      <div id="timer-fill"></div>
+    </div>
+
+    <div id="arena">
+      <span id="phase-label" class="hidden"></span>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════ RESULT ══════════════════ -->
+  <div id="screen-result" class="screen hidden">
+    <div class="result-inner">
+
+      <p class="result-eyebrow">final score</p>
+      <p class="result-big" id="result-score">0</p>
+      <p class="result-sub" id="result-msg"></p>
+      <p class="result-best">session best: <span id="result-best">0</span></p>
+
+      <div class="result-actions">
+        <button id="btn-restart" class="btn btn-primary">Play again</button>
+        <button id="btn-menu-result" class="btn btn-outline">Menu</button>
+      </div>
+
+    </div>
+  </div>
+
   <script src="js/scores.js"></script>
+  <script src="js/game1.js"></script>
+
 </body>
 </html>
