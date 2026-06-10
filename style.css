@@ -510,30 +510,6 @@ h2 {
   font-weight: 800;
 }
 
-.answer-input {
-  width: 100%;
-  min-height: 130px;
-  resize: vertical;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.8rem;
-  background: #091018;
-  color: var(--text);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 1.05rem;
-}
-
-.answer-input:focus {
-  border-color: var(--blue);
-  outline: none;
-}
-
-.input-help {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
 .feedback {
   width: min(100%, 620px);
   margin: 0 auto;
