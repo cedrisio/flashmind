@@ -27,9 +27,9 @@ Show: 6 + 1   → type 5  (answer to 8−3)
 
 Rules:
 - 3 lives — a wrong answer costs one life and briefly shows the correct answer
-- 5 correct answers in a row increases N by 1
+- Every 5 correct answers in a row (streak of 5, 10, 15, …) increases N by 1
 - Game ends at 0 lives
-- Score = (highest N reached × 100) + total correct answers
+- Score = (highest N reached × 100) + total correct answers — starts at 100 because N begins at 1; increases as N rises
 
 ## Running
 
