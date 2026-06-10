@@ -1,329 +1,358 @@
-/**
- * game1.js — Number Flash
- *
- * State machine:  idle → showing → clicking → (transitioning → showing) | gameover
- *
- * Each round:
- *   1. N numbered circles appear at random non-overlapping positions (SHOWING phase)
- *   2. After X seconds the circles vanish; invisible zones remain (CLICKING phase)
- *   3. Player clicks zones in numerical order 1 → 2 → 3 …
- *   4. All correct → level up, +1 circle, flash time decreases → next round
- *   5. Wrong click → game over
- *
- * Scoring per completed level:
- *   base  = level × 10
- *   speed = max(0, circleCount × 30 − floor(secondsTaken × 8))
- *   total += base + speed
- */
+(function () {
+  'use strict';
 
-'use strict';
+  var START_CIRCLES = 3;
+  var START_FLASH_MS = 2300;
+  var MIN_FLASH_MS = 900;
+  var FLASH_STEP_MS = 120;
+  var MAX_PLACEMENT_ATTEMPTS = 700;
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+  var state = freshState();
+  var flashTimer = null;
+  var timerFrame = null;
+  var timerStartedAt = 0;
+  var timerDuration = 0;
+  var lastOutcome = 'correct';
 
-const CIRCLE_R        = 30;            // radius in px (60 px diameter, good touch target)
-const CIRCLE_D        = CIRCLE_R * 2;
-const EDGE_PAD        = CIRCLE_R + 14; // keep circles fully inside arena edges
-const MIN_DIST        = CIRCLE_D + 16; // minimum center-to-center distance (no overlap)
-const MAX_ATTEMPTS    = 400;           // retry budget per circle during placement
+  var introScreen = byId('intro-screen');
+  var gameScreen = byId('game-screen');
+  var startButton = byId('start-button');
+  var restartButton = byId('restart-button');
+  var restartRunButton = byId('restart-run-button');
+  var nextRoundButton = byId('next-round-button');
+  var roundActions = byId('round-actions');
+  var arena = byId('arena');
+  var feedback = byId('feedback');
+  var phaseLabel = byId('phase-label');
+  var difficultyLabel = byId('difficulty-label');
+  var timerFill = byId('timer-fill');
+  var roundValue = byId('round-value');
+  var scoreValue = byId('score-value');
+  var streakValue = byId('streak-value');
+  var mistakesValue = byId('mistakes-value');
 
-const START_COUNT     = 2;             // circles at level 1
-const START_FLASH_MS  = 2000;          // flash duration at level 1 (ms)
-const FLASH_DEC_MS    = 100;           // ms shaved off per level
-const MIN_FLASH_MS    = 500;           // flash time floor (0.5 s)
-
-// ─── Game state ───────────────────────────────────────────────────────────────
-
-/** Return a clean initial state object. */
-function freshState() {
-  return {
-    phase:        'idle',   // idle | showing | clicking | transitioning | gameover
-    level:        1,
-    circleCount:  START_COUNT,
-    flashMs:      START_FLASH_MS,
-    circles:      [],       // { num, el, zoneEl }
-    nextExpected: 1,        // which number the player should click next
-    totalScore:   0,        // accumulated points across levels
-    clickStart:   0,        // performance.now() at start of clicking phase (for speed bonus)
-    flashTimeout: null,     // setTimeout handle for flash→recall transition
-    timerRAF:     null,     // requestAnimationFrame handle for timer bar
-  };
-}
-
-let G = freshState();
-
-// ─── DOM refs ─────────────────────────────────────────────────────────────────
-
-const $ = id => document.getElementById(id);
-
-const screenIntro  = $('screen-intro');
-const screenGame   = $('screen-game');
-const screenResult = $('screen-result');
-const arena        = $('arena');
-const phaseLabel   = $('phase-label');
-const timerBar     = $('timer-bar');
-const timerFill    = $('timer-fill');
-const elLevel      = $('stat-level');
-const elCount      = $('stat-count');
-const elSpeed      = $('stat-speed');
-const elScore      = $('stat-score');
-const elResultScore = $('result-score');
-const elResultBest  = $('result-best');
-const elResultMsg   = $('result-msg');
-
-// ─── Screen switching ─────────────────────────────────────────────────────────
-
-function showScreen(name) {
-  screenIntro .classList.toggle('hidden', name !== 'intro');
-  screenGame  .classList.toggle('hidden', name !== 'game');
-  screenResult.classList.toggle('hidden', name !== 'result');
-}
-
-// ─── Stats display ────────────────────────────────────────────────────────────
-
-function refreshStats() {
-  elLevel.textContent = G.level;
-  elCount.textContent = G.circleCount;
-  elSpeed.textContent = (G.flashMs / 1000).toFixed(1) + 's';
-  elScore.textContent = G.totalScore;
-}
-
-// ─── Timer bar ────────────────────────────────────────────────────────────────
-
-/** Animate the timer bar draining over durationMs. Turns red in the last 25%. */
-function startTimer(durationMs) {
-  timerBar.classList.remove('hidden');
-  timerFill.style.width = '100%';
-  const t0 = performance.now();
-
-  function tick(now) {
-    const pct = Math.max(0, 1 - (now - t0) / durationMs);
-    timerFill.style.width      = (pct * 100) + '%';
-    timerFill.style.background = pct < 0.25 ? 'var(--error)' : 'var(--accent)';
-    if (pct > 0) G.timerRAF = requestAnimationFrame(tick);
+  function byId(id) {
+    return document.getElementById(id);
   }
-  G.timerRAF = requestAnimationFrame(tick);
-}
 
-function stopTimer() {
-  if (G.timerRAF) { cancelAnimationFrame(G.timerRAF); G.timerRAF = null; }
-  timerFill.style.width = '0%';
-  timerBar.classList.add('hidden');
-}
+  function freshState() {
+    return {
+      phase: 'intro',
+      round: 1,
+      score: 0,
+      streak: 0,
+      mistakes: 0,
+      circleCount: START_CIRCLES,
+      flashMs: START_FLASH_MS,
+      nextExpected: 1,
+      positions: [],
+      clickStartedAt: 0
+    };
+  }
 
-// ─── Circle placement (collision-aware) ───────────────────────────────────────
+  function showGame() {
+    introScreen.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+  }
 
-/** Pick a random center point within the safe inner bounds of the arena. */
-function rndPos(w, h) {
-  return {
-    x: EDGE_PAD + Math.random() * (w - EDGE_PAD * 2),
-    y: EDGE_PAD + Math.random() * (h - EDGE_PAD * 2),
-  };
-}
+  function updateStats() {
+    roundValue.textContent = state.round;
+    scoreValue.textContent = state.score;
+    streakValue.textContent = state.streak;
+    mistakesValue.textContent = state.mistakes;
+    difficultyLabel.textContent = state.circleCount + ' circles - ' + (state.flashMs / 1000).toFixed(1) + 's flash';
+  }
 
-/** True if two positions are within the minimum allowed distance. */
-function clash(a, b) {
-  return Math.hypot(a.x - b.x, a.y - b.y) < MIN_DIST;
-}
+  function setPhase(text) {
+    phaseLabel.textContent = text;
+  }
 
-/**
- * Generate N non-overlapping center positions.
- * Falls back to best available position if MAX_ATTEMPTS is exceeded
- * (prevents infinite loops on very small arenas with many circles).
- */
-function genPositions(n, w, h) {
-  const placed = [];
-  for (let i = 0; i < n; i++) {
-    let best, bestClash = Infinity;
-    for (let t = 0; t < MAX_ATTEMPTS; t++) {
-      const p = rndPos(w, h);
-      // find closest existing circle to this candidate
-      const minD = placed.reduce((d, q) => Math.min(d, Math.hypot(p.x - q.x, p.y - q.y)), Infinity);
-      if (!placed.some(q => clash(p, q))) { best = p; break; } // no overlap → use it
-      if (minD > bestClash) { best = p; bestClash = minD; }    // track least-bad option
+  function setFeedback(kind, html) {
+    feedback.className = 'feedback ' + kind;
+    feedback.innerHTML = html;
+    feedback.classList.remove('hidden');
+  }
+
+  function hideFeedback() {
+    feedback.classList.add('hidden');
+    feedback.textContent = '';
+  }
+
+  function clearTimers() {
+    if (flashTimer !== null) {
+      window.clearTimeout(flashTimer);
+      flashTimer = null;
     }
-    placed.push(best);
+    if (timerFrame !== null) {
+      window.cancelAnimationFrame(timerFrame);
+      timerFrame = null;
+    }
+    timerFill.style.width = '0%';
   }
-  return placed;
-}
 
-// ─── Build / clear circles ────────────────────────────────────────────────────
+  function startTimer(duration) {
+    timerStartedAt = performance.now();
+    timerDuration = duration;
+    timerFill.style.width = '100%';
 
-function clearArena() {
-  arena.querySelectorAll('.circle, .circle-zone').forEach(el => el.remove());
-  G.circles = [];
-}
-
-/**
- * Populate the arena with n circles at random positions.
- * Numbers 1..n are assigned in random order (position ≠ numerical order).
- */
-function buildCircles(n) {
-  clearArena();
-
-  const rect  = arena.getBoundingClientRect();
-  const w     = rect.width  || window.innerWidth;
-  const h     = rect.height || window.innerHeight - 133; // rough fallback
-  const positions = genPositions(n, w, h);
-
-  // shuffle which number goes to which position
-  const nums = Array.from({ length: n }, (_, i) => i + 1)
-    .sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < n; i++) {
-    const num  = nums[i];
-    const pos  = positions[i];
-    const top  = (pos.y - CIRCLE_R) + 'px';
-    const left = (pos.x - CIRCLE_R) + 'px';
-    const size = CIRCLE_D + 'px';
-
-    // ── visible numbered circle (shown during SHOWING phase) ──────────────────
-    const circle = document.createElement('div');
-    circle.className = 'circle';
-    circle.textContent = num;
-    Object.assign(circle.style, { top, left, width: size, height: size });
-    arena.appendChild(circle);
-
-    // ── invisible clickable zone (active during CLICKING phase) ───────────────
-    const zone = document.createElement('div');
-    zone.className = 'circle-zone';
-    zone.setAttribute('role', 'button');
-    zone.setAttribute('aria-label', `position ${num}`);
-    Object.assign(zone.style, { top, left, width: size, height: size });
-    zone.addEventListener('click', () => onZoneClick(num));
-    arena.appendChild(zone);
-
-    G.circles.push({ num, el: circle, zoneEl: zone });
-  }
-}
-
-// ─── Game phases ──────────────────────────────────────────────────────────────
-
-/** Begin a new round: show circles for flashMs, then enter recall phase. */
-function startRound() {
-  G.phase        = 'showing';
-  G.nextExpected = 1;
-  refreshStats();
-
-  buildCircles(G.circleCount);
-
-  // circles visible, zones hidden
-  G.circles.forEach(c => {
-    c.el.classList.remove('hidden');
-    c.zoneEl.classList.add('hidden');
-  });
-
-  phaseLabel.textContent = 'memorize';
-  phaseLabel.classList.remove('hidden');
-
-  startTimer(G.flashMs);
-  G.flashTimeout = setTimeout(enterRecall, G.flashMs);
-}
-
-/** Hide circles, reveal clickable zones — player must now recall from memory. */
-function enterRecall() {
-  if (G.phase !== 'showing') return; // guard against stale timeout
-  G.phase      = 'clicking';
-  G.clickStart = performance.now();
-  stopTimer();
-
-  G.circles.forEach(c => {
-    c.el.classList.add('hidden');
-    c.zoneEl.classList.remove('hidden');
-  });
-
-  phaseLabel.textContent = 'recall';
-}
-
-/** Called when the player clicks a zone. */
-function onZoneClick(num) {
-  if (G.phase !== 'clicking') return;
-
-  if (num === G.nextExpected) {
-    // ── correct ───────────────────────────────────────────────────────────────
-    const hit = G.circles.find(c => c.num === num);
-    hit.zoneEl.classList.add('clicked');
-    setTimeout(() => hit.zoneEl.classList.add('hidden'), 280);
-
-    G.nextExpected++;
-
-    if (G.nextExpected > G.circleCount) {
-      // all circles found — level complete
-      const secs      = (performance.now() - G.clickStart) / 1000;
-      const base      = G.level * 10;
-      const speed     = Math.max(0, G.circleCount * 30 - Math.floor(secs * 8));
-      G.totalScore   += base + speed;
-      G.level++;
-      G.circleCount++;
-      G.flashMs       = Math.max(MIN_FLASH_MS, G.flashMs - FLASH_DEC_MS);
-      G.phase         = 'transitioning';
-      refreshStats();
-
-      arena.classList.add('flash-ok');
-      setTimeout(() => {
-        arena.classList.remove('flash-ok');
-        startRound();
-      }, 550);
+    function tick(now) {
+      var elapsed = now - timerStartedAt;
+      var remaining = Math.max(0, 1 - elapsed / timerDuration);
+      timerFill.style.width = (remaining * 100).toFixed(2) + '%';
+      if (remaining > 0 && state.phase === 'memorize') {
+        timerFrame = window.requestAnimationFrame(tick);
+      }
     }
 
-  } else {
-    // ── wrong ─────────────────────────────────────────────────────────────────
-    triggerGameOver();
+    timerFrame = window.requestAnimationFrame(tick);
   }
-}
 
-/** End the game: show where circles actually were, then display result screen. */
-function triggerGameOver() {
-  G.phase = 'gameover';
-  clearTimeout(G.flashTimeout);
-  stopTimer();
+  function clearArena() {
+    arena.textContent = '';
+  }
 
-  // ghost all circles so the player can see the correct positions
-  G.circles.forEach(c => {
-    c.el.classList.remove('hidden');
-    c.el.style.opacity = '0.28';
-    c.el.style.borderColor = 'var(--error)';
-    c.el.style.color = 'var(--error)';
-    c.zoneEl.classList.add('hidden');
+  function getCircleSize(count, width, height) {
+    var base = width < 480 ? 52 : 58;
+    if (count <= 8) {
+      return base;
+    }
+    var areaSize = Math.floor(Math.sqrt((width * height) / (count * 2.2)));
+    return Math.max(44, Math.min(base, areaSize));
+  }
+
+  function randomBetween(min, max) {
+    return min + Math.random() * (max - min);
+  }
+
+  function distance(a, b) {
+    var dx = a.x - b.x;
+    var dy = a.y - b.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function makePositions(count, width, height, size) {
+    var positions = [];
+    var radius = size / 2;
+    var padding = radius + 12;
+    var minDistance = size + 12;
+
+    for (var i = 0; i < count; i += 1) {
+      var chosen = null;
+      var best = null;
+      var bestDistance = -1;
+
+      for (var attempt = 0; attempt < MAX_PLACEMENT_ATTEMPTS; attempt += 1) {
+        var candidate = {
+          x: randomBetween(padding, Math.max(padding, width - padding)),
+          y: randomBetween(padding, Math.max(padding, height - padding))
+        };
+
+        var closest = positions.reduce(function (smallest, point) {
+          return Math.min(smallest, distance(candidate, point));
+        }, Infinity);
+
+        if (closest >= minDistance) {
+          chosen = candidate;
+          break;
+        }
+
+        if (closest > bestDistance) {
+          bestDistance = closest;
+          best = candidate;
+        }
+      }
+
+      positions.push(chosen || best || { x: padding, y: padding });
+    }
+
+    return positions;
+  }
+
+  function shuffle(values) {
+    var copy = values.slice();
+    for (var i = copy.length - 1; i > 0; i -= 1) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = tmp;
+    }
+    return copy;
+  }
+
+  function buildRound() {
+    clearArena();
+
+    var rect = arena.getBoundingClientRect();
+    var width = Math.max(280, rect.width);
+    var height = Math.max(320, rect.height);
+    var size = getCircleSize(state.circleCount, width, height);
+    var numbers = shuffle(Array.from({ length: state.circleCount }, function (_, index) {
+      return index + 1;
+    }));
+    var positions = makePositions(state.circleCount, width, height, size);
+
+    state.positions = [];
+
+    numbers.forEach(function (number, index) {
+      var point = positions[index];
+      state.positions.push({ number: number, x: point.x, y: point.y, size: size });
+
+      var circle = document.createElement('div');
+      circle.className = 'circle';
+      circle.textContent = number;
+      circle.style.left = point.x + 'px';
+      circle.style.top = point.y + 'px';
+      circle.style.width = size + 'px';
+      circle.style.height = size + 'px';
+      arena.appendChild(circle);
+
+      var target = document.createElement('button');
+      target.className = 'target hidden';
+      target.type = 'button';
+      target.setAttribute('aria-label', 'Remembered position');
+      target.style.left = point.x + 'px';
+      target.style.top = point.y + 'px';
+      target.style.width = size + 'px';
+      target.style.height = size + 'px';
+      target.addEventListener('click', function () {
+        handleTargetClick(number, target);
+      });
+      arena.appendChild(target);
+    });
+  }
+
+  function startRound() {
+    clearTimers();
+    hideFeedback();
+    roundActions.classList.add('hidden');
+    state.phase = 'memorize';
+    state.nextExpected = 1;
+    updateStats();
+    setPhase('memorize');
+    buildRound();
+    startTimer(state.flashMs);
+
+    flashTimer = window.setTimeout(function () {
+      enterRecall();
+    }, state.flashMs);
+  }
+
+  function enterRecall() {
+    if (state.phase !== 'memorize') {
+      return;
+    }
+
+    clearTimers();
+    state.phase = 'recall';
+    state.clickStartedAt = performance.now();
+    setPhase('recall: click 1');
+
+    arena.querySelectorAll('.circle').forEach(function (circle) {
+      circle.classList.add('hidden');
+    });
+    arena.querySelectorAll('.target').forEach(function (target) {
+      target.classList.remove('hidden');
+    });
+  }
+
+  function handleTargetClick(number, target) {
+    if (state.phase !== 'recall') {
+      return;
+    }
+
+    if (number !== state.nextExpected) {
+      target.classList.add('miss');
+      handleWrongClick(number);
+      return;
+    }
+
+    target.classList.add('hit');
+    target.disabled = true;
+    state.nextExpected += 1;
+
+    if (state.nextExpected > state.circleCount) {
+      completeRound();
+    } else {
+      setPhase('recall: click ' + state.nextExpected);
+    }
+  }
+
+  function completeRound() {
+    state.phase = 'feedback';
+    var seconds = Math.max(0.1, (performance.now() - state.clickStartedAt) / 1000);
+    var speedBonus = Math.max(0, Math.round(state.circleCount * 12 - seconds * 4));
+    var roundPoints = state.circleCount * 20 + state.streak * 6 + speedBonus;
+    state.score += roundPoints;
+    state.streak += 1;
+    lastOutcome = 'correct';
+    setPhase('correct');
+    setFeedback('good', 'Correct. +' + roundPoints + ' points.');
+    nextRoundButton.textContent = 'Next round';
+    roundActions.classList.remove('hidden');
+    updateStats();
+  }
+
+  function handleWrongClick(clickedNumber) {
+    state.phase = 'feedback';
+    state.mistakes += 1;
+    state.streak = 0;
+    lastOutcome = 'wrong';
+    setPhase('incorrect');
+    revealAnswer();
+
+    setFeedback(
+      'bad',
+      'Incorrect. You clicked position ' + clickedNumber + ' while looking for ' + state.nextExpected + '.'
+    );
+    nextRoundButton.textContent = 'Next attempt';
+    roundActions.classList.remove('hidden');
+    updateStats();
+  }
+
+  function revealAnswer() {
+    arena.querySelectorAll('.target').forEach(function (target) {
+      target.disabled = true;
+      target.classList.add('hidden');
+    });
+    arena.querySelectorAll('.circle').forEach(function (circle) {
+      circle.classList.remove('hidden');
+      circle.classList.add('reveal');
+    });
+  }
+
+  function advanceRound() {
+    if (lastOutcome === 'correct') {
+      state.circleCount += 1;
+      state.flashMs = Math.max(MIN_FLASH_MS, state.flashMs - FLASH_STEP_MS);
+    }
+    state.round += 1;
+    startRound();
+  }
+
+  function restartRun() {
+    clearTimers();
+    clearArena();
+    state = freshState();
+    showGame();
+    window.requestAnimationFrame(function () {
+      startRound();
+    });
+  }
+
+  startButton.addEventListener('click', function () {
+    showGame();
+    window.requestAnimationFrame(function () {
+      startRound();
+    });
   });
 
-  arena.classList.add('flash-wrong');
-  setTimeout(() => arena.classList.remove('flash-wrong'), 400);
+  restartButton.addEventListener('click', restartRun);
+  restartRunButton.addEventListener('click', restartRun);
+  nextRoundButton.addEventListener('click', advanceRound);
 
-  setTimeout(() => {
-    const isNew = FlashmindScores.submit('game1', G.totalScore);
-    elResultScore.textContent = G.totalScore;
-    elResultBest.textContent  = FlashmindScores.get('game1');
-    elResultMsg.textContent   = isNew && G.totalScore > 0
-      ? '✦ new session best!'
-      : `level ${G.level} · ${G.circleCount - 1} circles`;
-    phaseLabel.classList.add('hidden');
-    showScreen('result');
-  }, 700);
-}
-
-// ─── Reset ────────────────────────────────────────────────────────────────────
-
-function resetGame() {
-  clearTimeout(G.flashTimeout);
-  stopTimer();
-  clearArena();
-  G = freshState();
-}
-
-// ─── Button handlers ──────────────────────────────────────────────────────────
-
-$('btn-start').addEventListener('click', () => {
-  showScreen('game');
-  // double rAF: ensures arena has final layout dimensions before reading getBoundingClientRect
-  requestAnimationFrame(() => requestAnimationFrame(startRound));
-});
-
-$('btn-restart').addEventListener('click', () => {
-  resetGame();
-  showScreen('game');
-  requestAnimationFrame(() => requestAnimationFrame(startRound));
-});
-
-$('btn-menu-result').addEventListener('click', () => {
-  window.location.href = 'index.html';
-});
+  window.addEventListener('resize', function () {
+    if (state.phase === 'memorize' || state.phase === 'recall') {
+      startRound();
+    }
+  });
+}());

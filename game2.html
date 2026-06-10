@@ -3,17 +3,106 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>N-Back — FlashMind</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <title>flashmind - devilish calc</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <nav class="navbar">
-    <a href="index.html" class="logo">flash<span class="logo-dim">mind</span></a>
+  <nav class="topbar" aria-label="Game navigation">
+    <a class="brand" href="index.html">flash<span>mind</span></a>
+    <a class="menu-link" href="index.html">Back to menu</a>
   </nav>
-  <main class="container" style="padding-top:4rem;text-align:center;">
-    <p class="text-muted">game 2 coming soon — scaffold only</p>
-    <a href="index.html" class="btn btn-ghost" style="margin-top:1.5rem;">← back</a>
+
+  <main class="game-page">
+    <section id="intro-screen" class="screen intro-screen">
+      <div class="intro-copy">
+        <p class="eyebrow">game 02</p>
+        <h1>devilish calc</h1>
+        <p class="lead">Equations flash one at a time. Solve each one mentally — but enter the answer from N steps ago.</p>
+
+        <div class="instructions">
+          <h2>How to play</h2>
+          <ol>
+            <li>An equation appears. Solve it in your head but don't type yet.</li>
+            <li>When the next equation appears, type the answer to the <em>previous</em> one.</li>
+            <li>At N=1 you answer one behind. At N=2, two behind — much harder.</li>
+            <li>5 correct answers in a row increases N by 1.</li>
+            <li>You have 3 lives. A wrong answer costs a life and shows the correct answer.</li>
+          </ol>
+          <div class="how-to-example">
+            <p class="example-label">Example at N=1</p>
+            <table class="example-table">
+              <thead><tr><th>You see</th><th>You type</th></tr></thead>
+              <tbody>
+                <tr><td>3 + 4</td><td>— (nothing yet)</td></tr>
+                <tr><td>5 + 2</td><td>7 (answer to 3+4)</td></tr>
+                <tr><td>8 − 3</td><td>7 (answer to 5+2)</td></tr>
+                <tr><td>6 + 1</td><td>5 (answer to 8−3)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="start-button" class="btn btn-blue" type="button">Start game</button>
+          <a class="btn btn-secondary" href="index.html">Back to menu</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-screen" class="screen play-screen hidden" aria-label="Devilish calc game">
+      <div class="game-toolbar">
+        <div class="status-grid" aria-label="Game status">
+          <div class="stat blue-stat">
+            <span id="n-value" class="stat-value">1</span>
+            <span class="stat-label">N-back</span>
+          </div>
+          <div class="stat blue-stat">
+            <span id="score-value" class="stat-value">0</span>
+            <span class="stat-label">score</span>
+          </div>
+          <div class="stat blue-stat">
+            <span id="streak-value" class="stat-value">0</span>
+            <span class="stat-label">streak</span>
+          </div>
+          <div class="stat blue-stat">
+            <span id="lives-value" class="stat-value">♥♥♥</span>
+            <span class="stat-label">lives</span>
+          </div>
+        </div>
+        <button id="restart-button" class="btn btn-small btn-secondary" type="button">Restart</button>
+      </div>
+
+      <div class="phase-row">
+        <span id="phase-label" class="phase-pill blue-pill">ready</span>
+        <span id="difficulty-label" class="phase-detail">N = 1</span>
+      </div>
+
+      <div id="equation-panel" class="count-panel">
+        <p id="equation-meta" class="challenge-meta">solve in your head</p>
+        <div id="equation-display" class="number-flash equation-display">—</div>
+      </div>
+
+      <div id="answer-panel" class="answer-panel">
+        <p id="answer-prompt" class="answer-prompt">Waiting for first equation…</p>
+        <div class="calc-input-row">
+          <input id="answer-input" class="calc-input" type="number" inputmode="numeric" autocomplete="off" placeholder="answer" disabled />
+          <button id="submit-button" class="btn btn-blue" type="button" disabled>Submit</button>
+        </div>
+      </div>
+
+      <div id="feedback" class="feedback hidden" role="status" aria-live="polite"></div>
+
+      <div id="game-over-panel" class="game-over-panel hidden">
+        <h2>Game over</h2>
+        <p id="final-score-text" class="final-score"></p>
+        <div class="actions centered">
+          <button id="play-again-button" class="btn btn-blue" type="button">Play again</button>
+          <a class="btn btn-secondary" href="index.html">Back to menu</a>
+        </div>
+      </div>
+    </section>
   </main>
-  <script src="js/scores.js"></script>
+
+  <script src="game2.js"></script>
 </body>
 </html>

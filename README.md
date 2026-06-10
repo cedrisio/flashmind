@@ -1,26 +1,49 @@
 # flashmind
 
-Browser-based cognitive training games. Vanilla HTML/CSS/JS - no frameworks, no build step.
+Small browser-based cognitive training games built with vanilla HTML, CSS, and JavaScript.
 
-Open `index.html` to start, or deploy to GitHub Pages as-is.
+Open `index.html` directly in a browser to play. No build step, no framework, no dependencies, no external assets.
 
-## games
+## Games
 
-**Number Flash** (`game1.html`)  
-Circles appear briefly on screen. Remember their positions and click them back in numerical order.
+### Number flash (game 01)
 
-**N-Back** (`game2.html`)  
-Numbers appear one at a time. Recall what appeared N steps ago. N increases as you improve.
+Numbered circles appear briefly on screen. After they disappear, click the blank target positions in numerical order (1, 2, 3, …). Each successful round adds another circle and shortens the flash duration.
 
-## running
+### Devilish calc (game 02)
 
-Clone the repo and open `index.html` in a browser. No server required.
+Simple addition and subtraction equations (numbers 1–20, results always positive) appear one at a time. Solve each equation mentally but don't enter that answer yet — enter the answer from N equations ago.
 
-For Cloudflare Pages: connect the repo in the Cloudflare dashboard, set build command to blank (none), output directory to `/` (root), and deploy from `main`.
+At N=1 you answer one behind. At N=2, two behind.
 
-## tech
+Example at N=1:
 
-- Zero dependencies
-- No localStorage — scores are session-only (reset when tab closes)
-- Mobile-friendly layout
-- Works offline once loaded
+```
+Show: 3 + 4   → compute 7 in your head, type nothing
+Show: 5 + 2   → type 7  (answer to 3+4)
+Show: 8 − 3   → type 7  (answer to 5+2)
+Show: 6 + 1   → type 5  (answer to 8−3)
+```
+
+Rules:
+- 3 lives — a wrong answer costs one life and briefly shows the correct answer
+- 5 correct answers in a row increases N by 1
+- Game ends at 0 lives
+- Score = (highest N reached × 100) + total correct answers
+
+## Running
+
+Open `index.html` in a browser. No server required.
+
+## Deployment
+
+Deploy as-is to Cloudflare Pages. Leave the build command blank and set the output directory to `/`.
+
+## Technical notes
+
+- Vanilla HTML, CSS, and JavaScript only
+- No build step, no dependencies
+- No `localStorage` or `sessionStorage` — all state is in page memory only
+- Refreshing or closing the tab resets progress
+- Mobile-friendly layout with large touch targets
+- Flat file structure: all files at root
