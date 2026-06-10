@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlashMind — Cognitive Training</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+
+    /* ── hero ── */
+    .hero {
+      text-align: center;
+      padding: 3.5rem 1.25rem 2.5rem;
+    }
+
+    .hero-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(2.8rem, 9vw, 4.2rem);
+      font-weight: 600;
+      letter-spacing: -0.05em;
+      line-height: 1;
+    }
+
+    .hero-logo .hl-flash { color: var(--text); }
+    .hero-logo .hl-mind  { color: var(--accent); }
+
+    .hero-tagline {
+      margin-top: 0.9rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    /* ── game grid ── */
+    .games-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      padding: 0 1.25rem 2rem;
+    }
+
+    @media (max-width: 520px) {
+      .games-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── game card ── */
+    .game-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      transition: border-color var(--trans);
+    }
+
+    /* top accent bar — the one bold flourish */
+    .game-card::before {
+      content: '';
+      display: block;
+      height: 2px;
+      width: 2.5rem;
+      border-radius: 2px;
+    }
+
+    .game-card.g1::before { background: var(--accent); }
+    .game-card.g2::before { background: var(--accent2); }
+
+    .game-card.g1:hover { border-color: var(--accent); }
+    .game-card.g2:hover { border-color: var(--accent2); }
+
+    .game-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .game-card.g1 .game-num { color: var(--accent); }
+    .game-card.g2 .game-num { color: var(--accent2); }
+
+    .game-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .game-desc {
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .game-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .hs-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .game-card.g1 .hs-value { color: var(--accent); font-weight: 600; }
+    .game-card.g2 .hs-value { color: var(--accent2); font-weight: 600; }
+
+    /* ── footer ── */
+    .site-footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.04em;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ── nav ── -->
+  <nav class="navbar">
+    <a href="index.html" class="logo">
+      flash<span class="logo-dim">mind</span>
+    </a>
+    <span class="text-muted" style="font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;">
+      cognitive training
+    </span>
+  </nav>
+
+  <!-- ── hero ── -->
+  <header class="hero container">
+    <h1 class="hero-logo">
+      <span class="hl-flash">flash</span><span class="hl-mind">mind</span>
+    </h1>
+    <p class="hero-tagline">train your working memory</p>
+  </header>
+
+  <!-- ── game picker ── -->
+  <main>
+    <div class="games-grid container">
+
+      <!-- GAME 1 - Number Flash -->
+      <div class="game-card g1">
+        <div>
+          <p class="game-num">game 01</p>
+          <h2 class="game-title">Number Flash</h2>
+        </div>
+        <p class="game-desc">
+          Circles appear and vanish. Click them back in order — 
+          from memory. Each round gets faster and adds one more number.
+        </p>
+        <div class="game-card-footer">
+          <p class="hs-label">
+            best: <span class="hs-value" id="hs-g1">—</span>
+          </p>
+          <a href="game1.html" class="btn btn-primary">Play</a>
+        </div>
+      </div>
+
+      <!-- GAME 2 - N-Back -->
+      <div class="game-card g2">
+        <div>
+          <p class="game-num">game 02</p>
+          <h2 class="game-title">N-Back</h2>
+        </div>
+        <p class="game-desc">
+          Numbers appear one by one. Recall what showed up N steps ago. 
+          Five in a row and N increases. Three strikes and it ends.
+        </p>
+        <div class="game-card-footer">
+          <p class="hs-label">
+            best: <span class="hs-value" id="hs-g2">—</span>
+          </p>
+          <a href="game2.html" class="btn btn-blue">Play</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    flashmind &mdash; runs in the browser, no data ever leaves this tab
+  </footer>
+
+  <script src="js/scores.js"></script>
+  <script>
+    // Update high score display from session storage
+    function refreshScores() {
+      const g1 = FlashmindScores.get('game1');
+      const g2 = FlashmindScores.get('game2');
+      document.getElementById('hs-g1').textContent = g1 > 0 ? g1 : '—';
+      document.getElementById('hs-g2').textContent = g2 > 0 ? g2 : '—';
+    }
+
+    // Re-check when the player tabs back from a game
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) refreshScores();
+    });
+
+    refreshScores();
+  </script>
+
+</body>
+</html>
