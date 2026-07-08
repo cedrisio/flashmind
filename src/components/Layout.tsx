@@ -1,7 +1,27 @@
-import { type ReactNode } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
+import { NavLink, Link, useLocation } from 'react-router-dom'
+
+const VERSION = 'v1.0.0'
 
 export function Layout({ children }: { children: ReactNode }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const location = useLocation()
+
+  // close the mobile menu whenever the route changes
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
+
+  // close on Escape for keyboard users
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen])
+
   return (
     <>
       <a className="skip-link" href="#main">
@@ -11,41 +31,55 @@ export function Layout({ children }: { children: ReactNode }) {
         <Link className="brand" to="/">
           flash<span>mind</span>
         </Link>
-        <div className="topbar-nav">
-          <NavLink className="menu-link" to="/">
-            Home
+        <button
+          type="button"
+          className="menu-toggle"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+          aria-controls="primary-menu"
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          <span className="menu-toggle-bar" data-open={menuOpen} aria-hidden="true" />
+          <span className="menu-toggle-bar" data-open={menuOpen} aria-hidden="true" />
+          <span className="menu-toggle-bar" data-open={menuOpen} aria-hidden="true" />
+        </button>
+        <div
+          id="primary-menu"
+          className={`topbar-nav${menuOpen ? ' open' : ''}`}
+        >
+          <NavLink className="menu-link" to="/" end>
+            home
           </NavLink>
           <NavLink className="menu-link" to="/scores">
-            Scores
+            scores
           </NavLink>
           <NavLink className="menu-link" to="/about">
-            About
+            about
           </NavLink>
-          <a
-            className="menu-link"
-            href="https://github.com/cedrisio/flashmind"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            github
-          </a>
-          <a
-            className="menu-link"
-            href="https://cedr.is"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            portfolio
-          </a>
         </div>
       </nav>
       <main id="main">{children}</main>
       <footer className="site-footer">
-        <a href="https://github.com/cedrisio/flashmind" target="_blank" rel="noopener noreferrer">
-          source on github
+        <span className="version-badge" title="mobile-first arcade release">
+          {VERSION}
+        </span>
+        <a
+          href="https://github.com/cedrisio/flashmind"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="flashmind on github"
+          className="footer-link"
+        >
+          github
         </a>
         <span aria-hidden="true"> · </span>
-        <a href="https://cedr.is" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://cedr.is"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Cedris portfolio"
+          className="footer-link"
+        >
           cedr.is
         </a>
       </footer>
