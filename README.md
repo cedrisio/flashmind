@@ -146,6 +146,9 @@ flashmind stores no progress in `localStorage` or `sessionStorage`. Game state l
 
 This is intentional simplicity, not a bug. There are no accounts, no saved scores, and no cross-session state.
 
+## Development workflow
+
+
 ## Local development
 
 Requires Node 18+ (tested on Node 24).
