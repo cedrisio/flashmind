@@ -1,6 +1,6 @@
 # flashmind
 
-Quick arcade games for your brain's entertainment - memory and number puzzles that run entirely in your browser.
+Quick arcade games for your brain's entertainment - memory, number, and colour puzzles that run entirely in your browser.
 
 Built with React, Vite, and TypeScript. No account, no tracking. Leaderboards coming soon.
 
@@ -32,6 +32,51 @@ Rules:
 - Every 5 correct answers in a row (streak of 5, 10, 15, ...) increases N by 1
 - Game ends at 0 lives
 - Score = (highest N reached x 100) + total correct answers
+
+### Color clash (game 03)
+
+A colour word ("red", "blue", "green", "yellow") appears printed in ink that may not match the word. Pick the colour of the ink, not the word itself. About 70% of rounds mismatch the word versus the ink; 30% match, to keep it honest.
+
+Buttons are always shown in a fixed order (red, blue, green, yellow) and each carries its colour name as a label, so the game is not colour-hue dependent and stays open to colourblind players.
+
+Two modes:
+- Standard: 60 second run. Correct answer +10. A streak of 5 or more adds a +5 bonus per answer. Wrong answer resets the streak and costs 2 seconds.
+- Relaxed: 90 second run. No time penalty on wrong answers.
+
+Keyboard play: keys 1-4 map to the four answer buttons (1=red, 2=blue, 3=green, 4=yellow).
+
+Rules:
+- Correct answer: +10 points
+- Streak of 5 or more: +5 bonus per correct answer
+- Wrong answer resets streak (and costs 2 seconds in standard mode)
+- Game ends at 0:00
+- Score = final points
+
+### Digit rush (game 04)
+
+A string of digits flashes on screen, then hides. Type it back in reverse order from memory and press Enter to submit. Each correct answer grows the string by one digit for the next round.
+
+Flash duration scales with length: 600ms + 300ms per digit in standard mode, 900ms + 450ms per digit in relaxed mode.
+
+Two modes:
+- Standard: faster flash (600ms + 300ms per digit)
+- Relaxed: slower flash (900ms + 450ms per digit)
+
+Keyboard play: type the digits in reverse, then Enter to submit. The input is a numeric text field - leading zeros are valid digits here, so "012" shown means you type "210". Type them exactly, last digit first.
+
+Example:
+
+```
+You see: 401   -> type 104
+You see: 7320  -> type 0237
+You see: 09    -> type 90
+```
+
+Rules:
+- 3 lives - a wrong answer shows the correct answer and costs one life
+- Each correct answer grows the string by 1
+- Game ends at 0 lives
+- Score = (longest chain reached x 100) + total correct answers
 
 ## Local development
 
