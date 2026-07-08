@@ -9,7 +9,7 @@ export function Scores() {
       <div className="instructions">
         <h2>Coming soon</h2>
         <p style={{ margin: 0, color: 'var(--muted)' }}>
-          Per-game leaderboards with standard and accessible modes will appear here once the
+          Per-game leaderboards with standard and relaxed modes will appear here once the
           backend is wired up.
         </p>
       </div>

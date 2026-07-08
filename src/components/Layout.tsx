@@ -21,9 +21,34 @@ export function Layout({ children }: { children: ReactNode }) {
           <NavLink className="menu-link" to="/about">
             About
           </NavLink>
+          <a
+            className="menu-link"
+            href="https://github.com/cedrisio/flashmind"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            github
+          </a>
+          <a
+            className="menu-link"
+            href="https://cedr.is"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            portfolio
+          </a>
         </div>
       </nav>
       <main id="main">{children}</main>
+      <footer className="site-footer">
+        <a href="https://github.com/cedrisio/flashmind" target="_blank" rel="noopener noreferrer">
+          source on github
+        </a>
+        <span aria-hidden="true"> · </span>
+        <a href="https://cedr.is" target="_blank" rel="noopener noreferrer">
+          cedr.is
+        </a>
+      </footer>
     </>
   )
 }
