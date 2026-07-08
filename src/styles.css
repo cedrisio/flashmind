@@ -10,6 +10,10 @@
   --accent-strong: #ffd27a;
   --blue: #61a5ff;
   --blue-strong: #9bc7ff;
+  --violet: #b08bff;
+  --violet-strong: #cfb4ff;
+  --green: #58d68d;
+  --green-strong: #93f0b5;
   --success: #58d68d;
   --error: #ff6b6b;
   --warning: #f6c85f;
@@ -184,6 +188,16 @@ h2 {
   border-color: var(--blue);
 }
 
+.game-card.accent-three:hover,
+.game-card.accent-three:focus-visible {
+  border-color: var(--violet);
+}
+
+.game-card.accent-four:hover,
+.game-card.accent-four:focus-visible {
+  border-color: var(--green);
+}
+
 .card-index {
   color: var(--muted);
   font-size: 0.85rem;
@@ -215,6 +229,16 @@ h2 {
 .accent-two .card-action {
   background: var(--blue);
   color: #04111f;
+}
+
+.accent-three .card-action {
+  background: var(--violet);
+  color: #160a26;
+}
+
+.accent-four .card-action {
+  background: var(--green);
+  color: #04190d;
 }
 
 .privacy-note {
@@ -660,6 +684,122 @@ h2 {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+.final-meta {
+  margin-bottom: 1.25rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* 4-card home grid */
+.menu-grid-four {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* mode picker on intro screens */
+.mode-pick {
+  margin: 1.25rem 0;
+}
+
+.mode-pick h2 {
+  margin-bottom: 0.6rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* color clash */
+.clash-panel {
+  width: min(100%, 620px);
+  margin: 0 auto;
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.clash-word {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 5rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.clash-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  width: min(100%, 620px);
+  margin: 0 auto;
+}
+
+.clash-btn {
+  position: relative;
+  min-height: 72px;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 0.3rem;
+  place-items: center;
+  padding: 0.6rem 0.5rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.clash-btn:hover,
+.clash-btn:focus-visible {
+  border-color: var(--clash-color, var(--accent));
+  outline: none;
+}
+
+.clash-btn:active {
+  transform: scale(0.98);
+}
+
+.clash-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.clash-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--clash-color, var(--accent));
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
+
+.clash-label {
+  font-weight: 800;
+  color: var(--text);
+}
+
+.clash-key {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+/* digit rush display */
+.digit-flash-display {
+  letter-spacing: 0.15em;
+}
+
+.muted-display {
+  color: var(--muted);
+}
+
 .hidden {
   display: none !important;
 }
@@ -720,7 +860,8 @@ h2 {
 }
 
 @media (max-width: 720px) {
-  .menu-grid {
+  .menu-grid,
+  .menu-grid-four {
     grid-template-columns: 1fr;
   }
 
@@ -734,6 +875,10 @@ h2 {
 
   .memory-arena {
     min-height: 390px;
+  }
+
+  .clash-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -797,6 +942,10 @@ h2 {
 
   .number-flash {
     font-size: 4rem;
+  }
+
+  .clash-word {
+    font-size: 3.5rem;
   }
 
   .actions .btn {
