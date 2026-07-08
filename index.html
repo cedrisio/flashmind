@@ -1,41 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>flashmind</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <nav class="topbar" aria-label="Main navigation">
-    <a class="brand" href="index.html">flash<span>mind</span></a>
-    <span class="topbar-note">cognitive training</span>
-  </nav>
-
-  <main class="page home-page">
-    <section class="hero">
-      <p class="eyebrow">browser-based cognitive training games</p>
-      <h1>flashmind</h1>
-      <p class="lead">Short memory drills that run entirely in your browser.</p>
-    </section>
-
-    <section class="menu-grid" aria-label="Games">
-      <a class="game-card accent-one" href="game1.html">
-        <span class="card-index">game 01</span>
-        <h2>number flash</h2>
-        <p>Numbered circles flash on screen. Memorize each one's position, then tap the blank targets in numerical order.</p>
-        <span class="card-action">Play number flash</span>
-      </a>
-
-      <a class="game-card accent-two" href="game2.html">
-        <span class="card-index">game 02</span>
-        <h2>devilish calc</h2>
-        <p>Solve equations mentally. Enter the answer from N steps ago. N increases as you improve.</p>
-        <span class="card-action">Play devilish calc</span>
-      </a>
-    </section>
-
-    <p class="privacy-note">No account, no tracking, session-only scores.</p>
-  </main>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <title>flashmind - browser arcade games</title>
+    <meta name="description" content="four fast browser games for memory patterns, colour matching, arithmetic recall, and reverse digit play. built with react, typescript, and cloudflare pages." />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
