@@ -12,7 +12,7 @@ const descriptions: Record<GameId, string> = {
   'number-flash':
     "Numbered circles flash on screen. Memorise each one's position, then tap the blank targets in numerical order.",
   'echo-calc':
-    'Solve equations mentally. Enter the answer from N steps ago. N climbs as your streak grows.',
+    'Solve equations mentally. Enter the answer from earlier in the queue. The echo depth grows as your streak builds.',
   'color-clash':
     'A colour word appears in ink that may not match. Pick the ink colour, not the word. 60 second sprint with streak bonuses.',
   'digit-rush':
