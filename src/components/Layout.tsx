@@ -1,7 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 
-const VERSION = 'v1.0.0'
+// single source of truth: the version field in package.json, injected at build
+// time via vite define (see vite.config.ts). bump with `npm version <ver>` and
+// the footer badge + README stay in sync.
+const VERSION = __APP_VERSION__
 
 export function Layout({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
