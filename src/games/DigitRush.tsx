@@ -1,5 +1,6 @@
-import { useRef, useState, useCallback, useEffect, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { Numpad } from '../components/Numpad'
 
 // Standard flash: 600ms + 300ms per digit.
 // Relaxed flash: 900ms + 450ms per digit.
@@ -27,6 +28,7 @@ interface GameState {
   announce: string
   inputDisabled: boolean
   submitLabel: string
+  inputValue: string
 }
 
 function freshState(mode: Mode): GameState {
@@ -44,6 +46,7 @@ function freshState(mode: Mode): GameState {
     announce: '',
     inputDisabled: true,
     submitLabel: 'Submit',
+    inputValue: '',
   }
 }
 
@@ -80,7 +83,7 @@ export function DigitRush() {
   const [, setTick] = useState(0)
   const render = useCallback(() => setTick((t: number) => (t + 1) & 0x7fffffff), [])
 
-  const inputRef = useRef<HTMLInputElement>(null)
+  const numpadRef = useRef<HTMLDivElement>(null)
   const flashTimerRef = useRef<number | null>(null)
 
   function clearTimers() {
@@ -96,6 +99,7 @@ export function DigitRush() {
     g.lastShown = g.current
     g.phase = 'showing'
     g.feedback = null
+    g.inputValue = ''
     g.announce = `Memorise the ${g.length} digit${g.length !== 1 ? 's' : ''}, then type them in reverse.`
     g.inputDisabled = true
     render()
@@ -106,15 +110,14 @@ export function DigitRush() {
       s.inputDisabled = false
       s.announce = 'Now type the digits in reverse order, then press Enter.'
       render()
-      requestAnimationFrame(() => inputRef.current?.focus())
+      requestAnimationFrame(() => numpadRef.current?.focus())
     }, dur)
   }
 
   function handleSubmit() {
     const g = game.current
     if (g.phase !== 'recalling') return
-    const input = inputRef.current
-    const raw = (input?.value ?? '').trim()
+    const raw = g.inputValue.trim()
     if (raw === '') {
       g.feedback = { kind: 'warn', text: 'Type the digits first.' }
       render()
@@ -177,13 +180,6 @@ export function DigitRush() {
 
   function restartGame() {
     startGame(game.current.mode)
-  }
-
-  function onKeyDown(e: ReactKeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleSubmit()
-    }
   }
 
   useEffect(() => {
@@ -353,26 +349,20 @@ export function DigitRush() {
                 ? 'Watch the digits...'
                 : g.feedback?.text ?? ''}
           </p>
-          <div className="calc-input-row">
-            <input
-              ref={inputRef}
-              className="calc-input"
-              type="text"
-              inputMode="numeric"
-              autoComplete="off"
-              placeholder={g.phase === 'recalling' ? 'digits in reverse' : 'wait'}
-              onKeyDown={onKeyDown}
-              disabled={g.inputDisabled || g.phase !== 'recalling'}
-            />
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={handleSubmit}
-              disabled={g.phase !== 'recalling'}
-            >
-              {g.submitLabel}
-            </button>
-          </div>
+          <Numpad
+            ref={numpadRef}
+            value={g.inputValue}
+            onChange={(v) => {
+              game.current.inputValue = v
+              render()
+            }}
+            onSubmit={handleSubmit}
+            disabled={g.inputDisabled || g.phase !== 'recalling'}
+            maxLength={g.length}
+            submitLabel={g.submitLabel}
+            placeholder={g.phase === 'recalling' ? 'digits in reverse' : 'wait'}
+            accent="accent"
+          />
         </div>
 
         <div

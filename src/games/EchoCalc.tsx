@@ -1,5 +1,6 @@
-import { useRef, useState, useCallback, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { Numpad } from '../components/Numpad'
 
 const LIVES_START = 3
 const STREAK_LEVEL_UP = 5
@@ -27,6 +28,7 @@ interface GameState {
   inputDisabled: boolean
   submitLabel: string
   promptText: string
+  inputValue: string
   feedback: { kind: string; text: string } | null
   announce: string
 }
@@ -47,6 +49,7 @@ function freshState(): GameState {
     inputDisabled: true,
     submitLabel: 'Next →',
     promptText: 'Warming up…',
+    inputValue: '',
     feedback: null,
     announce: '',
   }
@@ -86,7 +89,7 @@ export function EchoCalc() {
   const [, setTick] = useState(0)
   const render = useCallback(() => setTick((t: number) => (t + 1) & 0x7fffffff), [])
 
-  const inputRef = useRef<HTMLInputElement>(null)
+  const numpadRef = useRef<HTMLDivElement>(null)
   const nextTimerRef = useRef<number | null>(null)
 
   function clearTimers() {
@@ -107,6 +110,7 @@ export function EchoCalc() {
   function showNextEquation() {
     const g = game.current
     g.feedback = null
+    g.inputValue = ''
     const eq = makeEquation()
     g.history.push(eq.result)
     g.equationCount += 1
@@ -133,7 +137,7 @@ export function EchoCalc() {
 
     updateAnnounce(g, `Equation ${g.equationCount}: ${eq.display}`)
     render()
-    requestAnimationFrame(() => inputRef.current?.focus())
+    requestAnimationFrame(() => numpadRef.current?.focus())
   }
 
   function endGame() {
@@ -163,8 +167,7 @@ export function EchoCalc() {
       return
     }
 
-    const input = inputRef.current
-    const raw = (input?.value ?? '').trim()
+    const raw = g.inputValue.trim()
     if (raw === '') {
       g.feedback = { kind: 'warn', text: 'Enter a number first.' }
       render()
@@ -226,13 +229,6 @@ export function EchoCalc() {
     game.current = fresh
     render()
     requestAnimationFrame(() => showNextEquation())
-  }
-
-  function onKeyDown(e: ReactKeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleSubmit()
-    }
   }
 
   const g = game.current
@@ -362,24 +358,19 @@ export function EchoCalc() {
 
         <div className="answer-panel">
           <p className="answer-prompt">{g.promptText}</p>
-          <div className="calc-input-row">
-            <input
-              ref={inputRef}
-              className="calc-input"
-              type="number"
-              inputMode="numeric"
-              autoComplete="off"
-              placeholder={g.answeringEqNum === 0 ? 'press Enter to continue' : 'answer'}
-              onKeyDown={onKeyDown}
-            />
-            <button
-              className="btn btn-blue"
-              type="button"
-              onClick={handleSubmit}
-            >
-              {g.submitLabel}
-            </button>
-          </div>
+          <Numpad
+            ref={numpadRef}
+            value={g.inputValue}
+            onChange={(v) => {
+              game.current.inputValue = v
+              render()
+            }}
+            onSubmit={handleSubmit}
+            disabled={g.inputDisabled}
+            submitLabel={g.submitLabel}
+            placeholder={g.answeringEqNum === 0 ? 'press Next to continue' : 'answer'}
+            accent="blue"
+          />
         </div>
 
         <div
