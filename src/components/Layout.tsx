@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
+import { unlockAudio } from '../audio/sound'
 
 // single source of truth: the version field in package.json, injected at build
 // time via vite define (see vite.config.ts). bump with `npm version <ver>` and
@@ -24,6 +25,20 @@ export function Layout({ children }: { children: ReactNode }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [menuOpen])
+
+  // unlock the audio context on the first user gesture (browser autoplay
+  // policy). one-shot: once a gesture has been seen we stop listening so we
+  // never create a context on load and never log an autoplay warning.
+  useEffect(() => {
+    const onGesture = () => unlockAudio()
+    const opts = { once: true } as AddEventListenerOptions
+    window.addEventListener('pointerdown', onGesture, opts)
+    window.addEventListener('keydown', onGesture, opts)
+    return () => {
+      window.removeEventListener('pointerdown', onGesture)
+      window.removeEventListener('keydown', onGesture)
+    }
+  }, [])
 
   return (
     <>
