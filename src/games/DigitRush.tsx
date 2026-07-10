@@ -2,6 +2,8 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Numpad } from '../components/Numpad'
 import { GameRecap } from '../components/GameRecap'
+import { MuteButton } from '../components/MuteButton'
+import { play } from '../audio/sound'
 
 // Standard flash: 600ms + 300ms per digit.
 // Relaxed flash: 900ms + 450ms per digit.
@@ -106,6 +108,7 @@ export function DigitRush() {
     g.announce = `Memorise the ${g.length} digit${g.length !== 1 ? 's' : ''}, then type them in reverse.`
     g.inputDisabled = true
     render()
+    play('tick')
     const dur = flashDurationMs(g.mode, g.length)
     flashTimerRef.current = window.setTimeout(() => {
       const s = game.current
@@ -138,6 +141,7 @@ export function DigitRush() {
       g.highestLength = Math.max(g.highestLength, g.length)
       g.feedback = { kind: 'good', text: `Correct. Next: ${g.length + 1} digits.` }
       g.announce = `Correct. The shown string was ${g.current}.`
+      play('correct')
       render()
       g.length += 1
       window.setTimeout(() => {
@@ -151,6 +155,7 @@ export function DigitRush() {
         text: `Wrong. The answer was "${expected}". -1 life.`,
       }
       g.announce = `Wrong. The shown string was ${g.current}; the answer was ${expected}.`
+      play('wrong')
       render()
       if (g.lives <= 0) {
         endGame()
@@ -170,6 +175,7 @@ export function DigitRush() {
     g.feedback = null
     const finalVal = calcScore(g)
     g.announce = `Game over. Final score ${finalVal}. Best streak ${g.bestStreak}. Longest chain ${g.highestLength}. Press enter to play again.`
+    play('gameover')
     render()
   }
 
@@ -305,9 +311,12 @@ export function DigitRush() {
               <span className="stat-label">lives</span>
             </div>
           </div>
-          <button className="btn btn-small btn-secondary" type="button" onClick={restartGame}>
-            Restart
-          </button>
+          <div className="toolbar-actions">
+            <MuteButton />
+            <button className="btn btn-small btn-secondary" type="button" onClick={restartGame}>
+              Restart
+            </button>
+          </div>
         </div>
 
         <div className="phase-row">
