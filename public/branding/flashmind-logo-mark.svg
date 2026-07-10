@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="flashmind mark">
+  <title>flashmind mark</title>
+  <!-- 2x2 memory grid: one cell flashes, three muted. favicon/source symbol -->
+  <g transform="translate(2,2)">
+    <rect x="0"  y="0"  width="16" height="16" rx="5" fill="#f2b84b"/>
+    <rect x="20" y="0"  width="16" height="16" rx="5" fill="none" stroke="#93a4b5" stroke-width="2"/>
+    <rect x="0"  y="20" width="16" height="16" rx="5" fill="none" stroke="#93a4b5" stroke-width="2"/>
+    <rect x="20" y="20" width="16" height="16" rx="5" fill="none" stroke="#93a4b5" stroke-width="2"/>
+  </g>
+</svg>

@@ -61,6 +61,8 @@ body {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overscroll-behavior-y: none;
+  /* prevent horizontal scroll from any edge overflow on small screens */
+  overflow-x: hidden;
 }
 
 /* the app shell fills the screen so play-screens can be a single
@@ -68,7 +70,15 @@ body {
 #root {
   display: flex;
   flex-direction: column;
-  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+/* when a play-screen is active, lock the app to exactly one viewport so
+   the game fits without page scroll. dvh tracks the ios safari url bar,
+   vh/svh do not. intro and game-over screens keep scrolling. */
+#root:has(.play-screen) {
+  height: 100dvh;
+  overflow: hidden;
 }
 
 main#main {
@@ -97,40 +107,88 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  min-height: 56px;
-  padding: 0.6rem 0.9rem;
-  padding-top: max(0.6rem, var(--safe-top));
+  min-height: 52px;
+  padding: 0.55rem 0.85rem;
+  padding-top: max(0.55rem, var(--safe-top));
   border-bottom: 1px solid var(--border);
   background: rgba(8, 11, 15, 0.94);
   backdrop-filter: blur(12px);
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   color: var(--accent);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 800;
   text-decoration: none;
 }
 
-.brand span {
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: block;
+}
+
+.brand-text span {
   color: var(--text);
 }
 
+/* desktop nav: inline links. mobile nav: slide-down panel (see below). */
 .topbar-nav {
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
-.topbar-note,
+/* hamburger toggle - hidden on desktop, shown under 768px */
+.menu-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.menu-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.menu-toggle-bar {
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text);
+  transition: transform 160ms ease, opacity 120ms ease;
+}
+
+/* x icon when open */
+.menu-toggle-bar[data-open='true']:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.menu-toggle-bar[data-open='true']:nth-child(2) {
+  opacity: 0;
+}
+.menu-toggle-bar[data-open='true']:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
 .menu-link {
   color: var(--muted);
   font-size: 0.9rem;
   text-decoration: none;
-}
-
-.menu-link {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -151,17 +209,33 @@ a {
 .site-footer {
   flex: 0 0 auto;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 0.25rem;
-  padding: 1rem 0.9rem;
-  padding-bottom: max(1rem, calc(var(--safe-bottom) + 1rem));
+  gap: 0.4rem;
+  padding: 0.85rem 0.9rem;
+  padding-bottom: max(0.85rem, calc(var(--safe-bottom) + 0.85rem));
   border-top: 1px solid var(--border);
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
-.site-footer a {
+.version-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent-strong);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.site-footer a,
+.footer-link {
   color: var(--muted);
   text-decoration: none;
 }
@@ -169,6 +243,47 @@ a {
 .site-footer a:hover,
 .site-footer a:focus-visible {
   color: var(--text);
+}
+
+.footer-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.footer-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.55rem;
+  border-radius: var(--radius);
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-icon-link:hover {
+  color: var(--text);
+}
+
+.footer-icon-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.footer-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  display: block;
+  opacity: 0.9;
+  transition: opacity 120ms ease;
+}
+
+.footer-icon-link:hover .footer-icon,
+.footer-icon-link:focus-visible .footer-icon {
+  opacity: 1;
 }
 
 /* ---- page shells ---- */
@@ -190,10 +305,11 @@ a {
 
 /* only clamp the pages that contain a live play-screen (not intro/over,
    which need to scroll their long instructions). this is what forces the
-   phone play-screen to fit one viewport: the page is capped to the screen
-   height and the inner flex column distributes the space. */
+   phone play-screen to fit one viewport: the page fills the flex main and
+   the inner flex column distributes the space. */
 .game-page:has(.play-screen) {
-  max-height: 100svh;
+  flex: 1 1 0;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -202,14 +318,26 @@ a {
 }
 
 .hero {
-  padding: 1rem 0 1.25rem;
+  padding: 0.85rem 0 1rem;
+}
+
+.about-logo {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: 0 0 0.85rem;
 }
 
 .eyebrow {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.4rem;
   color: var(--accent);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
+}
+
+.eyebrow.tagline {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--muted);
 }
 
 h1,
@@ -220,13 +348,18 @@ p {
 }
 
 h1 {
-  margin-bottom: 0.6rem;
-  font-size: 2.1rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.7rem;
   line-height: 1.05;
 }
 
+/* home title: "Flash" in logo gold, "mind" in default text colour */
+.title-flash {
+  color: var(--accent);
+}
+
 h2 {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   line-height: 1.15;
 }
 
@@ -234,24 +367,34 @@ h2 {
   max-width: 42rem;
   margin-bottom: 0;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 0.95rem;
+}
+
+/* flavour text: italic, smaller - mtg-card-style flavour line */
+.flavour {
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.lead.flavour {
+  font-size: 0.88rem;
 }
 
 /* ---- home game grid ---- */
 .menu-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
 }
 
 .game-card {
   display: flex;
-  min-height: 180px;
+  min-height: 156px;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.9rem;
-  padding: 1rem;
+  gap: 0.75rem;
+  padding: 0.9rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -280,34 +423,28 @@ h2 {
   border-color: var(--green);
 }
 
-.card-index {
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
 .game-card h2 {
-  margin: 0.35rem 0 0.4rem;
+  margin: 0.3rem 0 0.35rem;
 }
 
 .game-card p {
   margin: 0;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .card-action {
   align-self: flex-start;
-  min-height: 44px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.6rem 0.9rem;
+  padding: 0.5rem 0.85rem;
   border-radius: var(--radius);
   background: var(--accent);
   color: #1c1400;
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .accent-two .card-action {
@@ -326,10 +463,47 @@ h2 {
 }
 
 .privacy-note {
-  margin: 1.25rem 0 0;
+  margin: 1rem 0 0;
   color: var(--muted);
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
+}
+
+/* ---- mobile carousel (snap scroller with arrows + dots) ----
+   shown only under 768px (see media query below). on tablet/desktop the
+   .menu-grid grid layout is used and this carousel is hidden. */
+.carousel {
+  display: none;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0.25rem 0.1rem;
+  /* allow arrow buttons to sit outside the scroll area */
+  scroll-padding-left: 0.1rem;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-card {
+  flex: 0 0 88%;
+  scroll-snap-align: center;
+  min-width: 88%;
+}
+
+.carousel-arrow {
+  display: none;
+}
+
+.carousel-dots {
+  display: none;
 }
 
 /* ---- game screens ---- */
@@ -341,13 +515,16 @@ h2 {
    this keeps everything in one viewport on phones - no scroll to find the
    next button or the result. intro/game-over keep scrolling. */
 .screen {
-  min-height: calc(100svh - 112px);
+  min-height: 0;
 }
 
 .intro-screen {
   display: grid;
-  place-items: center;
-  min-height: calc(100svh - 112px);
+  /* top-align intro content so it doesn't sit halfway down a tall
+     viewport with empty space above. horizontally centered. */
+  place-items: start center;
+  padding-top: 1rem;
+  min-height: 0;
 }
 
 .intro-copy {
@@ -356,26 +533,26 @@ h2 {
 }
 
 .instructions {
-  margin: 1.25rem 0;
-  padding: 1rem;
+  margin: 1rem 0;
+  padding: 0.85rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
 }
 
 .instructions h2 {
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.5rem;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .instructions ol {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.4rem;
   margin: 0;
   padding-left: 1.1rem;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .instructions li::marker {
@@ -392,6 +569,15 @@ h2 {
 .actions.centered {
   justify-content: center;
   margin-top: 0.5rem;
+}
+
+/* intro screens: normalize every actions row (mode-pick buttons and the
+   back-to-menu row) to identical gap and alignment so all four game intro
+   pages share one consistent button-row layout. */
+.intro-screen .actions,
+.intro-screen .mode-pick .actions {
+  gap: 0.6rem;
+  align-items: stretch;
 }
 
 .btn {
@@ -634,7 +820,7 @@ h2 {
   width: 100%;
   max-width: 620px;
   margin: 0 auto;
-  padding: 0.85rem;
+  padding: 0.7rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -649,7 +835,8 @@ h2 {
   display: grid;
   place-items: center;
   text-align: center;
-  padding: 1rem 0.85rem;
+  padding: 0.8rem 0.7rem;
+  min-height: 0;
 }
 
 .answer-panel {
@@ -657,7 +844,7 @@ h2 {
   /* balance the count-panel's top auto so the pair centers. */
   margin-bottom: auto;
   display: grid;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 
 .answer-prompt {
@@ -676,7 +863,7 @@ h2 {
 
 .number-flash {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 3rem;
+  font-size: 2.4rem;
   font-weight: 900;
   line-height: 1;
 }
@@ -717,7 +904,7 @@ h2 {
 }
 
 .equation-display {
-  font-size: 2.25rem;
+  font-size: 1.85rem;
   letter-spacing: 0.03em;
 }
 
@@ -763,15 +950,15 @@ h2 {
 /* ---- numpad (on-screen numeric entry, keeps the os keyboard hidden) ---- */
 .numpad {
   width: 100%;
-  max-width: 380px;
-  margin: 0.3rem auto 0;
+  max-width: 360px;
+  margin: 0.25rem auto 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .numpad-key {
-  min-height: 52px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -780,7 +967,7 @@ h2 {
   background: var(--surface-strong);
   color: var(--text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 800;
   cursor: pointer;
   touch-action: manipulation;
@@ -828,16 +1015,16 @@ h2 {
 /* display mirror of what the numpad is building, so the player sees their
    entry without a real text input stealing focus / summoning the os keyboard */
 .numpad-display {
-  min-height: 48px;
+  min-height: 44px;
   display: grid;
   place-items: center;
-  padding: 0.4rem;
+  padding: 0.35rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: #091018;
   color: var(--text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-align: center;
@@ -960,7 +1147,7 @@ h2 {
 
 .clash-word {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 2.75rem;
+  font-size: 2.25rem;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -1200,6 +1387,232 @@ h2 {
   }
 }
 
+/* ---- narrow phone play-screen compaction (<=390px) ----
+   compact stats + gaps so the full play-screen (stats, prompt, numpad)
+   fits one viewport on iphones without scrolling. numpad keys stay
+   tappable at 44px minimum touch targets. */
+@media (max-width: 390px) {
+  .game-page:has(.play-screen) {
+    padding: 0.5rem;
+  }
+
+  .play-screen {
+    gap: 0.35rem;
+  }
+
+  .status-grid {
+    gap: 0.25rem;
+  }
+
+  .stat {
+    min-height: 38px;
+    padding: 0.2rem 0.15rem;
+  }
+
+  .stat-value {
+    font-size: 0.82rem;
+  }
+
+  .stat-label {
+    font-size: 0.55rem;
+  }
+
+  .phase-row {
+    gap: 0.35rem;
+  }
+
+  .phase-pill {
+    min-height: 24px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .phase-detail {
+    font-size: 0.68rem;
+  }
+
+  .count-panel,
+  .answer-panel {
+    padding: 0.5rem;
+  }
+
+  .number-flash {
+    font-size: 2.1rem;
+  }
+
+  .equation-display {
+    font-size: 1.7rem;
+  }
+
+  .clash-panel {
+    min-height: 120px;
+    padding: 0.6rem;
+  }
+
+  .clash-word {
+    font-size: 2rem;
+  }
+
+  .memory-arena {
+    min-height: 160px;
+  }
+
+  .circle,
+  .target {
+    width: 46px;
+    height: 46px;
+  }
+
+  .circle {
+    font-size: 1rem;
+  }
+
+  .numpad {
+    max-width: 100%;
+    gap: 0.3rem;
+  }
+
+  .numpad-key {
+    min-height: 44px;
+    font-size: 1.15rem;
+  }
+
+  .numpad-display {
+    min-height: 40px;
+    padding: 0.25rem;
+    font-size: 1.15rem;
+  }
+}
+
+/* ---- mobile only (<768px): hamburger nav + games carousel ----
+   desktop keeps the inline nav and the grid. this layer swaps in a
+   slide-down menu panel and a horizontal snap carousel with arrows. */
+@media (max-width: 767px) {
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  /* slide-down panel: absolutely positioned under the topbar so opening
+     the menu does not shift the page layout. */
+  .topbar-nav {
+    position: absolute;
+    top: 100%;
+    right: 0.6rem;
+    left: 0.6rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.35rem;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    /* hidden state: visually + interactively closed without layout shift */
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: max-height 180ms ease, opacity 120ms ease;
+  }
+
+  .topbar-nav.open {
+    max-height: 320px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .menu-link {
+    min-height: 48px;
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+  }
+
+  .menu-link.active {
+    background: rgba(242, 184, 75, 0.1);
+  }
+
+  /* hide the grid on mobile, show the carousel */
+  .menu-grid {
+    display: none;
+  }
+
+  .carousel {
+    display: block;
+    position: relative;
+    margin-top: 0.85rem;
+  }
+
+  .carousel-arrow {
+    display: inline-flex;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(17, 24, 33, 0.92);
+    color: var(--text);
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    backdrop-filter: blur(6px);
+  }
+
+  .carousel-arrow:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .carousel-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+
+  .carousel-prev {
+    left: 0.2rem;
+  }
+
+  .carousel-next {
+    right: 0.2rem;
+  }
+
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+  }
+
+  .carousel-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: var(--border);
+    cursor: pointer;
+    transition: background 120ms ease, transform 120ms ease;
+  }
+
+  .carousel-dot.active {
+    background: var(--accent);
+    transform: scale(1.25);
+  }
+
+  .carousel-dot:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1231,6 +1644,11 @@ h2 {
     font-size: 1.05rem;
   }
 
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+
   .topbar-nav {
     gap: 0.5rem;
   }
@@ -1241,44 +1659,52 @@ h2 {
   }
 
   .hero {
-    padding: 2rem 0 1.5rem;
+    padding: 1.5rem 0 1.25rem;
+  }
+
+  .about-logo {
+    width: 140px;
+    height: 140px;
+    margin-bottom: 1.25rem;
   }
 
   .eyebrow {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
 
   h1 {
-    font-size: 3rem;
-    margin-bottom: 0.7rem;
+    font-size: 2.4rem;
+    margin-bottom: 0.6rem;
   }
 
   h2 {
-    font-size: 1.35rem;
+    font-size: 1.25rem;
   }
 
   .lead {
-    font-size: 1.08rem;
+    font-size: 1.02rem;
   }
 
-  /* home: 2x2 grid of game cards on tablets */
+  /* home: 2x2 grid of game cards on tablets. auto-rows 1fr makes all
+     cards equal height across both rows, not just within a row. */
   .menu-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
+    grid-auto-rows: 1fr;
+    gap: 0.9rem;
   }
 
   .game-card {
-    min-height: 240px;
-    gap: 1.25rem;
-    padding: 1.25rem;
+    min-height: 200px;
+    gap: 1rem;
+    padding: 1.1rem;
   }
 
   .game-card p {
-    font-size: 1rem;
+    font-size: 0.96rem;
   }
 
   .card-action {
-    padding: 0.7rem 1rem;
+    padding: 0.6rem 0.95rem;
   }
 
   /* game toolbar: stats row + restart on same line */
@@ -1352,20 +1778,20 @@ h2 {
   }
 
   .number-flash {
-    font-size: 5rem;
+    font-size: 4rem;
   }
 
   .equation-display {
-    font-size: 3.5rem;
+    font-size: 3rem;
   }
 
   .clash-panel {
-    min-height: 300px;
-    padding: 1.25rem;
+    min-height: 280px;
+    padding: 1.1rem;
   }
 
   .clash-word {
-    font-size: 5rem;
+    font-size: 4rem;
   }
 
   /* clash: 4 across on tablets (more horizontal room) */
@@ -1446,6 +1872,14 @@ h2 {
 
   .challenge-meta {
     font-size: 0.9rem;
+  }
+
+  /* cap the play area so the numpad and panels don't stretch absurdly
+     wide on tablets. center the play-screen within the game-page. */
+  .play-screen {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
   }
 }
 
