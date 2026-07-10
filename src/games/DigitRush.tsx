@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Numpad } from '../components/Numpad'
+import { GameRecap } from '../components/GameRecap'
 
 // Standard flash: 600ms + 300ms per digit.
 // Relaxed flash: 900ms + 450ms per digit.
@@ -20,6 +21,7 @@ interface GameState {
   length: number
   lives: number
   streak: number
+  bestStreak: number
   correctTotal: number
   highestLength: number
   current: string
@@ -38,6 +40,7 @@ function freshState(mode: Mode): GameState {
     length: START_LENGTH,
     lives: LIVES_START,
     streak: 0,
+    bestStreak: 0,
     correctTotal: 0,
     highestLength: START_LENGTH,
     current: '',
@@ -131,6 +134,7 @@ export function DigitRush() {
     if (raw === expected) {
       g.correctTotal += 1
       g.streak += 1
+      g.bestStreak = Math.max(g.bestStreak, g.streak)
       g.highestLength = Math.max(g.highestLength, g.length)
       g.feedback = { kind: 'good', text: `Correct. Next: ${g.length + 1} digits.` }
       g.announce = `Correct. The shown string was ${g.current}.`
@@ -165,7 +169,7 @@ export function DigitRush() {
     g.phase = 'over'
     g.feedback = null
     const finalVal = calcScore(g)
-    g.announce = `Game over. Final score ${finalVal}. Longest chain ${g.highestLength}. ${g.correctTotal} correct.`
+    g.announce = `Game over. Final score ${finalVal}. Best streak ${g.bestStreak}. Longest chain ${g.highestLength}. Press enter to play again.`
     render()
   }
 
@@ -269,27 +273,13 @@ export function DigitRush() {
 
   if (g.phase === 'over') {
     return (
-      <main className="game-page">
-        <section className="screen play-screen" aria-label="Digit rush game">
-          <div className="game-over-panel">
-            <h2>Game over</h2>
-            <p className="final-score">
-              Score: {finalScore} - longest chain: {g.highestLength}, correct: {g.correctTotal}
-            </p>
-            <div className="actions centered">
-              <button className="btn btn-primary" type="button" onClick={restartGame}>
-                Play again
-              </button>
-              <Link className="btn btn-secondary" to="/">
-                Back to menu
-              </Link>
-            </div>
-          </div>
-          <div className="announce" aria-live="polite">
-            {g.announce}
-          </div>
-        </section>
-      </main>
+      <GameRecap
+        score={finalScore}
+        bestStreak={g.bestStreak}
+        stat={{ label: 'Longest chain', value: g.highestLength }}
+        onPlayAgain={restartGame}
+        announce={g.announce}
+      />
     )
   }
 
