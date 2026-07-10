@@ -2,6 +2,8 @@ import { useRef, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Numpad } from '../components/Numpad'
 import { GameRecap } from '../components/GameRecap'
+import { MuteButton } from '../components/MuteButton'
+import { play } from '../audio/sound'
 
 const LIVES_START = 3
 const STREAK_LEVEL_UP = 5
@@ -152,6 +154,7 @@ export function EchoCalc() {
       g,
       `Game over. Final score ${finalVal}. Best streak ${g.bestStreak}. Highest echo depth ${g.highestN}. Press enter to play again.`,
     )
+    play('gameover')
     render()
   }
 
@@ -202,15 +205,18 @@ export function EchoCalc() {
         g.feedback = { kind: 'good', text: 'Correct!' }
         updateAnnounce(g, 'Correct.')
       }
+      play('correct')
     } else {
       g.lives -= 1
       g.streak = 0
       g.feedback = { kind: 'bad', text: `Wrong - the answer was ${expected}.` }
       updateAnnounce(g, `Wrong. The answer was ${expected}.`)
       if (g.lives <= 0) {
+        play('wrong')
         endGame()
         return
       }
+      play('wrong')
     }
 
     render()
@@ -330,9 +336,12 @@ export function EchoCalc() {
               <span className="stat-label">lives</span>
             </div>
           </div>
-          <button className="btn btn-small btn-secondary" type="button" onClick={restartGame}>
-            Restart
-          </button>
+          <div className="toolbar-actions">
+            <MuteButton />
+            <button className="btn btn-small btn-secondary" type="button" onClick={restartGame}>
+              Restart
+            </button>
+          </div>
         </div>
 
         <div className="phase-row">

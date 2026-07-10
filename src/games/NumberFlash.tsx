@@ -1,6 +1,8 @@
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { GameRecap } from '../components/GameRecap'
+import { MuteButton } from '../components/MuteButton'
+import { play } from '../audio/sound'
 
 const START_CIRCLES = 3
 const START_FLASH_MS = 2300
@@ -218,6 +220,7 @@ export function NumberFlash() {
     g.showRoundActions = false
     g.announce = `Round ${g.round}. ${g.circleCount} positions. Memorise where each number appears.`
     render()
+    play('tick')
     startTimer(g.flashMs)
     flashTimerRef.current = window.setTimeout(() => enterRecall(), g.flashMs)
   }
@@ -237,6 +240,7 @@ export function NumberFlash() {
     g.nextRoundLabel = 'Next round'
     g.showRoundActions = true
     g.announce = `Round complete. Plus ${roundPoints} points.`
+    play('correct')
     render()
   }
 
@@ -247,6 +251,7 @@ export function NumberFlash() {
     g.feedback = null
     g.showRoundActions = false
     g.announce = `Run over. Final score ${g.score}. Best streak ${g.bestStreak}. Highest count ${g.highestCircleCount}. Press enter to play again.`
+    play('gameover')
     render()
   }
 
@@ -272,6 +277,7 @@ export function NumberFlash() {
     g.nextRoundLabel = 'Next attempt'
     g.showRoundActions = true
     g.announce = `Incorrect. You clicked ${clickedNumber} while looking for ${g.nextExpected}.`
+    play('wrong')
     render()
   }
 
@@ -501,9 +507,12 @@ export function NumberFlash() {
               <span className="stat-label">mistakes</span>
             </div>
           </div>
-          <button className="btn btn-small btn-secondary" type="button" onClick={restartRun}>
-            Restart
-          </button>
+          <div className="toolbar-actions">
+            <MuteButton />
+            <button className="btn btn-small btn-secondary" type="button" onClick={restartRun}>
+              Restart
+            </button>
+          </div>
         </div>
 
         <div className="phase-row">

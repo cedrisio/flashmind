@@ -1,6 +1,8 @@
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { GameRecap } from '../components/GameRecap'
+import { MuteButton } from '../components/MuteButton'
+import { play } from '../audio/sound'
 
 // Standard mode: 60s, wrong answer costs 2s.
 // Relaxed mode: 90s, no time penalty on wrong answers.
@@ -113,6 +115,7 @@ export function ColorClash() {
     clearTimers()
     g.feedback = null
     g.announce = `Time's up. Final score ${g.score}. Best streak ${g.bestStreak}. ${g.correctTotal} correct. Press enter to play again.`
+    play('gameover')
     render()
   }
 
@@ -170,6 +173,7 @@ export function ColorClash() {
         text: streakBonus > 0 ? `Correct. +${points} (streak bonus) - streak ${g.streak}.` : `Correct. +${points}.`,
       }
       g.announce = `Correct. ${g.streak} in a row.`
+      play('correct')
     } else {
       g.streak = 0
       g.lastOutcome = 'wrong'
@@ -183,6 +187,7 @@ export function ColorClash() {
           : `Wrong. That was "${g.current.ink.label}" ink.`,
       }
       g.announce = `Wrong. The ink colour was ${g.current.ink.label}.`
+      play('wrong')
     }
 
     render()
@@ -315,9 +320,12 @@ export function ColorClash() {
               <span className="stat-label">round</span>
             </div>
           </div>
-          <button className="btn btn-small btn-secondary" type="button" onClick={restartGame}>
-            Restart
-          </button>
+          <div className="toolbar-actions">
+            <MuteButton />
+            <button className="btn btn-small btn-secondary" type="button" onClick={restartGame}>
+              Restart
+            </button>
+          </div>
         </div>
 
         <div className="phase-row">
