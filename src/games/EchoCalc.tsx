@@ -246,7 +246,6 @@ export function EchoCalc() {
       <main className="game-page">
         <section className="screen intro-screen">
           <div className="intro-copy">
-            <p className="eyebrow">Game 02</p>
             <h1>Echo Calc</h1>
             <p className="lead">
               Equations flash one at a time. Compute each one - but enter the answer from N steps
