@@ -17,7 +17,7 @@ export interface GameConfig {
 export const GAMES: Record<GameId, GameConfig> = {
   'number-flash': {
     id: 'number-flash',
-    name: 'number flash',
+    name: 'Number Flash',
     direction: 'higher',
     // circles grow ~1 per round; a realistic ceiling: 30 circles * 20 + streak
     // bound it generously at 9999 - anything higher is clearly garbage.
@@ -26,7 +26,7 @@ export const GAMES: Record<GameId, GameConfig> = {
   },
   'echo-calc': {
     id: 'echo-calc',
-    name: 'echo calc',
+    name: 'Echo Calc',
     direction: 'higher',
     // highestN*100 + correctTotal. highestN realistically climbs to ~8-12 in a
     // good run; bound at 9999 (e.g. n=99 + 999 correct is unreachable).
@@ -35,7 +35,7 @@ export const GAMES: Record<GameId, GameConfig> = {
   },
   'color-clash': {
     id: 'color-clash',
-    name: 'color clash',
+    name: 'Color Clash',
     direction: 'higher',
     // 60s run, +10 per correct + streak bonuses. realistic ceiling well under
     // 9999; bound generously.
@@ -44,7 +44,7 @@ export const GAMES: Record<GameId, GameConfig> = {
   },
   'digit-rush': {
     id: 'digit-rush',
-    name: 'digit rush',
+    name: 'Digit Rush',
     direction: 'higher',
     // highestLength*100 + correctTotal. length realistically climbs to ~8-12;
     // bound at 9999 (e.g. length=99 + 999 correct is unreachable).

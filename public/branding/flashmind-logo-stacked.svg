@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="flashmind">
+  <title>flashmind</title>
+  <!-- mark scaled x2 (36 -> 72), centred on top -->
+  <g transform="translate(44,20) scale(2)">
+    <rect x="0"  y="0"  width="16" height="16" rx="5" fill="#f2b84b"/>
+    <rect x="20" y="0"  width="16" height="16" rx="5" fill="none" stroke="#93a4b5" stroke-width="1"/>
+    <rect x="0"  y="20" width="16" height="16" rx="5" fill="none" stroke="#93a4b5" stroke-width="1"/>
+    <rect x="20" y="20" width="16" height="16" rx="5" fill="none" stroke="#93a4b5" stroke-width="1"/>
+  </g>
+  <!-- wordmark centred below -->
+  <text x="80" y="128" text-anchor="middle" dominant-baseline="central"
+    font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+    font-size="28" font-weight="800" letter-spacing="0.5" text-rendering="geometricPrecision">
+    <tspan fill="#f2b84b">flash</tspan><tspan fill="#edf2f7">mind</tspan>
+  </text>
+</svg>

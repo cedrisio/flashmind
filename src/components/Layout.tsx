@@ -31,8 +31,18 @@ export function Layout({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <nav className="topbar" aria-label="Main navigation">
-        <Link className="brand" to="/">
-          flash<span>mind</span>
+        <Link className="brand" to="/" aria-label="flashmind - home">
+          <img
+            src="/branding/flashmind-logo-mark.svg"
+            alt=""
+            width="22"
+            height="22"
+            className="brand-mark"
+            aria-hidden="true"
+          />
+          <span className="brand-text">
+            flash<span>mind</span>
+          </span>
         </Link>
         <button
           type="button"
@@ -51,13 +61,13 @@ export function Layout({ children }: { children: ReactNode }) {
           className={`topbar-nav${menuOpen ? ' open' : ''}`}
         >
           <NavLink className="menu-link" to="/" end>
-            home
+            Home
           </NavLink>
           <NavLink className="menu-link" to="/scores">
-            scores
+            Scores
           </NavLink>
           <NavLink className="menu-link" to="/about">
-            about
+            About
           </NavLink>
         </div>
       </nav>
@@ -66,25 +76,40 @@ export function Layout({ children }: { children: ReactNode }) {
         <span className="version-badge" title="mobile-first arcade release">
           {VERSION}
         </span>
-        <a
-          href="https://github.com/cedrisio/flashmind"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="flashmind on github"
-          className="footer-link"
-        >
-          github
-        </a>
-        <span aria-hidden="true"> · </span>
-        <a
-          href="https://cedr.is"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Cedris portfolio"
-          className="footer-link"
-        >
-          cedr.is
-        </a>
+        <nav className="footer-social" aria-label="Project links">
+          <a
+            href="https://github.com/cedrisio/flashmind"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="flashmind on github"
+            className="footer-icon-link"
+          >
+            <img
+              src="/branding/icon-github.svg"
+              alt=""
+              width="20"
+              height="20"
+              className="footer-icon"
+              aria-hidden="true"
+            />
+          </a>
+          <a
+            href="https://cedr.is"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Cedris portfolio (cedr.is)"
+            className="footer-icon-link"
+          >
+            <img
+              src="/branding/icon-cedris.svg"
+              alt=""
+              width="20"
+              height="20"
+              className="footer-icon"
+              aria-hidden="true"
+            />
+          </a>
+        </nav>
       </footer>
     </>
   )

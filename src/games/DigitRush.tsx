@@ -210,8 +210,8 @@ export function DigitRush() {
       <main className="game-page">
         <section className="screen intro-screen">
           <div className="intro-copy">
-            <p className="eyebrow">game 04</p>
-            <h1>digit rush</h1>
+            <p className="eyebrow">Game 04</p>
+            <h1>Digit Rush</h1>
             <p className="lead">
               A string of digits flashes briefly, then hides. Type it back in reverse order from
               memory. Each correct round makes the string one digit longer.
