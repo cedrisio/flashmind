@@ -1,6 +1,9 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Numpad } from '../components/Numpad'
+import { GameRecap } from '../components/GameRecap'
+import { MuteButton } from '../components/MuteButton'
+import { play } from '../audio/sound'
 
 // Standard flash: 600ms + 300ms per digit.
 // Relaxed flash: 900ms + 450ms per digit.
@@ -20,6 +23,7 @@ interface GameState {
   length: number
   lives: number
   streak: number
+  bestStreak: number
   correctTotal: number
   highestLength: number
   current: string
@@ -38,6 +42,7 @@ function freshState(mode: Mode): GameState {
     length: START_LENGTH,
     lives: LIVES_START,
     streak: 0,
+    bestStreak: 0,
     correctTotal: 0,
     highestLength: START_LENGTH,
     current: '',
@@ -103,6 +108,7 @@ export function DigitRush() {
     g.announce = `Memorise the ${g.length} digit${g.length !== 1 ? 's' : ''}, then type them in reverse.`
     g.inputDisabled = true
     render()
+    play('tick')
     const dur = flashDurationMs(g.mode, g.length)
     flashTimerRef.current = window.setTimeout(() => {
       const s = game.current
@@ -131,9 +137,11 @@ export function DigitRush() {
     if (raw === expected) {
       g.correctTotal += 1
       g.streak += 1
+      g.bestStreak = Math.max(g.bestStreak, g.streak)
       g.highestLength = Math.max(g.highestLength, g.length)
       g.feedback = { kind: 'good', text: `Correct. Next: ${g.length + 1} digits.` }
       g.announce = `Correct. The shown string was ${g.current}.`
+      play('correct')
       render()
       g.length += 1
       window.setTimeout(() => {
@@ -147,6 +155,7 @@ export function DigitRush() {
         text: `Wrong. The answer was "${expected}". -1 life.`,
       }
       g.announce = `Wrong. The shown string was ${g.current}; the answer was ${expected}.`
+      play('wrong')
       render()
       if (g.lives <= 0) {
         endGame()
@@ -165,7 +174,8 @@ export function DigitRush() {
     g.phase = 'over'
     g.feedback = null
     const finalVal = calcScore(g)
-    g.announce = `Game over. Final score ${finalVal}. Longest chain ${g.highestLength}. ${g.correctTotal} correct.`
+    g.announce = `Game over. Final score ${finalVal}. Best streak ${g.bestStreak}. Longest chain ${g.highestLength}. Press enter to play again.`
+    play('gameover')
     render()
   }
 
@@ -269,27 +279,13 @@ export function DigitRush() {
 
   if (g.phase === 'over') {
     return (
-      <main className="game-page">
-        <section className="screen play-screen" aria-label="Digit rush game">
-          <div className="game-over-panel">
-            <h2>Game over</h2>
-            <p className="final-score">
-              Score: {finalScore} - longest chain: {g.highestLength}, correct: {g.correctTotal}
-            </p>
-            <div className="actions centered">
-              <button className="btn btn-primary" type="button" onClick={restartGame}>
-                Play again
-              </button>
-              <Link className="btn btn-secondary" to="/">
-                Back to menu
-              </Link>
-            </div>
-          </div>
-          <div className="announce" aria-live="polite">
-            {g.announce}
-          </div>
-        </section>
-      </main>
+      <GameRecap
+        score={finalScore}
+        bestStreak={g.bestStreak}
+        stat={{ label: 'Longest chain', value: g.highestLength }}
+        onPlayAgain={restartGame}
+        announce={g.announce}
+      />
     )
   }
 
@@ -315,9 +311,12 @@ export function DigitRush() {
               <span className="stat-label">lives</span>
             </div>
           </div>
-          <button className="btn btn-small btn-secondary" type="button" onClick={restartGame}>
-            Restart
-          </button>
+          <div className="toolbar-actions">
+            <MuteButton />
+            <button className="btn btn-small btn-secondary" type="button" onClick={restartGame}>
+              Restart
+            </button>
+          </div>
         </div>
 
         <div className="phase-row">
