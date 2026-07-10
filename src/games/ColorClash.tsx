@@ -229,8 +229,7 @@ export function ColorClash() {
       <main className="game-page">
         <section className="screen intro-screen">
           <div className="intro-copy">
-            <p className="eyebrow">game 03</p>
-            <h1>color clash</h1>
+            <h1>Color Clash</h1>
             <p className="lead">
               A colour word appears printed in ink that may not match the word. Pick the colour of the
               ink, not the word itself.

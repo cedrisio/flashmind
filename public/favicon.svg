@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="flashmind">
+  <title>flashmind</title>
+  <!-- 2x2 memory grid, one cell flashes (solid gold), three muted tiles.
+       favicon form: rounded dark tile so the mark reads on any tab-bar
+       background. mark derived from the approved flashmind-logo-mark. -->
+  <rect x="0" y="0" width="40" height="40" rx="9" fill="#080b0f"/>
+  <g transform="translate(6,6)">
+    <rect x="0"  y="0"  width="12" height="12" rx="3.5" fill="#f2b84b"/>
+    <rect x="16" y="0"  width="12" height="12" rx="3.5" fill="none" stroke="#93a4b5" stroke-width="1.6"/>
+    <rect x="0"  y="16" width="12" height="12" rx="3.5" fill="none" stroke="#93a4b5" stroke-width="1.6"/>
+    <rect x="16" y="16" width="12" height="12" rx="3.5" fill="none" stroke="#93a4b5" stroke-width="1.6"/>
+  </g>
+</svg>
