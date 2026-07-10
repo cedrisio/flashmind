@@ -94,9 +94,9 @@ export function Home() {
   return (
     <div className="page home-page">
       <section className="hero">
-        <h1>flashmind</h1>
-        <p className="eyebrow tagline">quick browser arcade games</p>
-        <p className="lead">memory, numbers, colour, and recall - no accounts, just play.</p>
+        <h1 className="title-lockup"><span className="title-flash">Flash</span>mind</h1>
+        <p className="eyebrow tagline">Quick browser arcade games</p>
+        <p className="lead flavour">Memory, numbers, colour, and recall - no accounts, just play.</p>
       </section>
 
       {/* desktop/tablet: grid; mobile: horizontal snap carousel */}
@@ -104,13 +104,12 @@ export function Home() {
         className="menu-grid menu-grid-four"
         aria-label="Games"
       >
-        {GAME_LIST.map((game, index) => (
+        {GAME_LIST.map((game) => (
           <Link
             key={game.id}
             className={`game-card ${accentClass[game.id] ?? ''}`}
             to={`/play/${game.id}`}
           >
-            <span className="card-index">game {String(index + 1).padStart(2, '0')}</span>
             <h2>{game.name}</h2>
             <p>{descriptions[game.id]}</p>
             <span className="card-action">Play {game.name}</span>
@@ -143,16 +142,15 @@ export function Home() {
           onScroll={handleScroll}
           role="list"
         >
-          {GAME_LIST.map((game, index) => (
+          {GAME_LIST.map((game) => (
             <Link
               key={game.id}
               className={`game-card carousel-card ${accentClass[game.id] ?? ''}`}
               to={`/play/${game.id}`}
               role="listitem"
-              aria-label={`game ${index + 1}: ${game.name}`}
+              aria-label={game.name}
               onClick={() => pauseAutoplay()}
             >
-              <span className="card-index">game {String(index + 1).padStart(2, '0')}</span>
               <h2>{game.name}</h2>
               <p>{descriptions[game.id]}</p>
               <span className="card-action">Play {game.name}</span>
@@ -189,7 +187,7 @@ export function Home() {
         </div>
       </section>
 
-      <p className="privacy-note">no account needed - leaderboards coming soon.</p>
+      <p className="privacy-note flavour">No account needed - leaderboards coming soon.</p>
     </div>
   )
 }
