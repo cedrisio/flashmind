@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { GameRecap } from '../components/GameRecap'
 
 const START_CIRCLES = 3
 const START_FLASH_MS = 2300
@@ -8,7 +9,7 @@ const FLASH_STEP_MS = 120
 const MAX_PLACEMENT_ATTEMPTS = 700
 
 type TargetStatus = 'idle' | 'hit' | 'miss'
-type Phase = 'intro' | 'memorize' | 'recall' | 'feedback'
+type Phase = 'intro' | 'memorize' | 'recall' | 'feedback' | 'over'
 
 interface Position {
   number: number
@@ -23,6 +24,8 @@ interface GameState {
   round: number
   score: number
   streak: number
+  bestStreak: number
+  highestCircleCount: number
   mistakes: number
   circleCount: number
   flashMs: number
@@ -44,6 +47,8 @@ function freshState(): GameState {
     round: 1,
     score: 0,
     streak: 0,
+    bestStreak: 0,
+    highestCircleCount: START_CIRCLES,
     mistakes: 0,
     circleCount: START_CIRCLES,
     flashMs: START_FLASH_MS,
@@ -225,11 +230,23 @@ export function NumberFlash() {
     const roundPoints = g.circleCount * 20 + g.streak * 6 + speedBonus
     g.score += roundPoints
     g.streak += 1
+    g.bestStreak = Math.max(g.bestStreak, g.streak)
+    g.highestCircleCount = Math.max(g.highestCircleCount, g.circleCount)
     g.lastOutcome = 'correct'
     g.feedback = { kind: 'good', text: `Correct. +${roundPoints} points.` }
     g.nextRoundLabel = 'Next round'
     g.showRoundActions = true
     g.announce = `Round complete. Plus ${roundPoints} points.`
+    render()
+  }
+
+  function endRun() {
+    const g = game.current
+    clearTimers()
+    g.phase = 'over'
+    g.feedback = null
+    g.showRoundActions = false
+    g.announce = `Run over. Final score ${g.score}. Best streak ${g.bestStreak}. Highest count ${g.highestCircleCount}. Press enter to play again.`
     render()
   }
 
@@ -450,6 +467,18 @@ export function NumberFlash() {
     )
   }
 
+  if (g.phase === 'over') {
+    return (
+      <GameRecap
+        score={g.score}
+        bestStreak={g.bestStreak}
+        stat={{ label: 'Highest count', value: g.highestCircleCount }}
+        onPlayAgain={restartRun}
+        announce={g.announce}
+      />
+    )
+  }
+
   return (
     <main className="game-page">
       <section className="screen play-screen" aria-label="Number flash game">
@@ -547,6 +576,9 @@ export function NumberFlash() {
         <div className={`actions centered${g.showRoundActions ? '' : ' hidden'}`}>
           <button className="btn btn-primary" type="button" onClick={advanceRound}>
             {g.nextRoundLabel}
+          </button>
+          <button className="btn btn-secondary" type="button" onClick={endRun}>
+            Finish run
           </button>
           <button className="btn btn-secondary" type="button" onClick={restartRun}>
             Restart run
