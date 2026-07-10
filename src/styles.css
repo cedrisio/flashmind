@@ -108,6 +108,9 @@ a {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   color: var(--accent);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.95rem;
@@ -115,7 +118,14 @@ a {
   text-decoration: none;
 }
 
-.brand span {
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: block;
+}
+
+.brand-text span {
   color: var(--text);
 }
 
@@ -227,6 +237,47 @@ a {
   color: var(--text);
 }
 
+.footer-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.footer-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.55rem;
+  border-radius: var(--radius);
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-icon-link:hover {
+  color: var(--text);
+}
+
+.footer-icon-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.footer-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  display: block;
+  opacity: 0.9;
+  transition: opacity 120ms ease;
+}
+
+.footer-icon-link:hover .footer-icon,
+.footer-icon-link:focus-visible .footer-icon {
+  opacity: 1;
+}
+
 /* ---- page shells ---- */
 .page,
 .game-page {
@@ -261,6 +312,13 @@ a {
   padding: 0.85rem 0 1rem;
 }
 
+.about-logo {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: 0 0 0.85rem;
+}
+
 .eyebrow {
   margin: 0 0 0.4rem;
   color: var(--accent);
@@ -286,6 +344,11 @@ h1 {
   line-height: 1.05;
 }
 
+/* home title: "Flash" in logo gold, "mind" in default text colour */
+.title-flash {
+  color: var(--accent);
+}
+
 h2 {
   font-size: 1.1rem;
   line-height: 1.15;
@@ -296,6 +359,16 @@ h2 {
   margin-bottom: 0;
   color: var(--muted);
   font-size: 0.95rem;
+}
+
+/* flavour text: italic, smaller - mtg-card-style flavour line */
+.flavour {
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.lead.flavour {
+  font-size: 0.88rem;
 }
 
 /* ---- home game grid ---- */
@@ -339,12 +412,6 @@ h2 {
 .game-card.accent-four:hover,
 .game-card.accent-four:focus-visible {
   border-color: var(--green);
-}
-
-.card-index {
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 700;
 }
 
 .game-card h2 {
@@ -1458,6 +1525,11 @@ h2 {
     font-size: 1.05rem;
   }
 
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+
   .topbar-nav {
     gap: 0.5rem;
   }
@@ -1469,6 +1541,12 @@ h2 {
 
   .hero {
     padding: 1.5rem 0 1.25rem;
+  }
+
+  .about-logo {
+    width: 140px;
+    height: 140px;
+    margin-bottom: 1.25rem;
   }
 
   .eyebrow {
