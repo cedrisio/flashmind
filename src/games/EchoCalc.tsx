@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Numpad } from '../components/Numpad'
+import { GameRecap } from '../components/GameRecap'
 
 const LIVES_START = 3
 const STREAK_LEVEL_UP = 5
@@ -17,6 +18,7 @@ interface GameState {
   n: number
   lives: number
   streak: number
+  bestStreak: number
   correctTotal: number
   highestN: number
   phase: Phase
@@ -38,6 +40,7 @@ function freshState(): GameState {
     n: 1,
     lives: LIVES_START,
     streak: 0,
+    bestStreak: 0,
     correctTotal: 0,
     highestN: 1,
     phase: 'intro',
@@ -147,7 +150,7 @@ export function EchoCalc() {
     const finalVal = calcScore(g)
     updateAnnounce(
       g,
-      `Game over. Final score ${finalVal}. Highest echo depth ${g.highestN}. ${g.correctTotal} correct.`,
+      `Game over. Final score ${finalVal}. Best streak ${g.bestStreak}. Highest echo depth ${g.highestN}. Press enter to play again.`,
     )
     render()
   }
@@ -186,6 +189,7 @@ export function EchoCalc() {
     if (typed === expected) {
       g.correctTotal += 1
       g.streak += 1
+      g.bestStreak = Math.max(g.bestStreak, g.streak)
       if (g.streak % STREAK_LEVEL_UP === 0) {
         g.n += 1
         g.highestN = Math.max(g.highestN, g.n)
@@ -294,27 +298,13 @@ export function EchoCalc() {
 
   if (g.phase === 'over') {
     return (
-      <main className="game-page">
-        <section className="screen play-screen" aria-label="Echo calc game">
-          <div className="game-over-panel">
-            <h2>Game over</h2>
-            <p className="final-score">
-              Score: {finalScore} - highest echo depth: {g.highestN}, correct: {g.correctTotal}
-            </p>
-            <div className="actions centered">
-              <button className="btn btn-blue" type="button" onClick={restartGame}>
-                Play again
-              </button>
-              <Link className="btn btn-secondary" to="/">
-                Back to menu
-              </Link>
-            </div>
-          </div>
-          <div className="announce" aria-live="polite">
-            {g.announce}
-          </div>
-        </section>
-      </main>
+      <GameRecap
+        score={finalScore}
+        bestStreak={g.bestStreak}
+        stat={{ label: 'Highest echo depth', value: g.highestN }}
+        onPlayAgain={restartGame}
+        announce={g.announce}
+      />
     )
   }
 
