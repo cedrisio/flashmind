@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { GameRecap } from '../components/GameRecap'
 
 // Standard mode: 60s, wrong answer costs 2s.
 // Relaxed mode: 90s, no time penalty on wrong answers.
@@ -45,6 +46,8 @@ interface GameState {
   remainingMs: number
   score: number
   streak: number
+  bestStreak: number
+  correctTotal: number
   round: number
   current: Round | null
   feedback: { kind: string; text: string } | null
@@ -61,6 +64,8 @@ function freshState(mode: Mode): GameState {
     remainingMs: mode === 'relaxed' ? RUN_MS_RELAXED : RUN_MS_STANDARD,
     score: 0,
     streak: 0,
+    bestStreak: 0,
+    correctTotal: 0,
     round: 0,
     current: null,
     feedback: null,
@@ -107,7 +112,7 @@ export function ColorClash() {
     g.phase = 'over'
     clearTimers()
     g.feedback = null
-    g.announce = `Time's up. Final score ${g.score}.`
+    g.announce = `Time's up. Final score ${g.score}. Best streak ${g.bestStreak}. ${g.correctTotal} correct. Press enter to play again.`
     render()
   }
 
@@ -157,6 +162,8 @@ export function ColorClash() {
       const points = 10 + streakBonus
       g.score += points
       g.streak += 1
+      g.bestStreak = Math.max(g.bestStreak, g.streak)
+      g.correctTotal += 1
       g.lastOutcome = 'correct'
       g.feedback = {
         kind: 'good',
@@ -271,26 +278,13 @@ export function ColorClash() {
 
   if (g.phase === 'over') {
     return (
-      <main className="game-page">
-        <section className="screen play-screen" aria-label="Color clash game">
-          <div className="game-over-panel">
-            <h2>Time's up</h2>
-            <p className="final-score">Score: {g.score}</p>
-            <p className="final-meta">Rounds played: {g.round}</p>
-            <div className="actions centered">
-              <button className="btn btn-primary" type="button" onClick={restartGame}>
-                Play again
-              </button>
-              <Link className="btn btn-secondary" to="/">
-                Back to menu
-              </Link>
-            </div>
-          </div>
-          <div className="announce" aria-live="polite">
-            {g.announce}
-          </div>
-        </section>
-      </main>
+      <GameRecap
+        score={g.score}
+        bestStreak={g.bestStreak}
+        stat={{ label: 'Correct answers', value: g.correctTotal }}
+        onPlayAgain={restartGame}
+        announce={g.announce}
+      />
     )
   }
 
