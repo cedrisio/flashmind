@@ -1,50 +1,41 @@
 # Flashmind
 
-Quick browser arcade games - memory, numbers, colour, and recall. No accounts, just play.
+A browser arcade of quick puzzle games. No accounts, no installs, no sign-ups - just open a page and play.
 
-```
-live: https://flashmind.cedris.io
-source: https://github.com/cedrisio/flashmind
-```
-
-**v1.0.0 - mobile-first arcade release**
+Live at https://flashmind.cedris.io
 
 ## Games
 
-| # | Game | Route | Description |
-|---|------|-------|-------------|
-| 01 | Number Flash | `/play/number-flash` | Spatial memory grid |
-| 02 | Echo Calc | `/play/echo-calc` | Arithmetic recall with a shifting delay |
-| 03 | Color Clash | `/play/color-clash` | Colour versus word |
-| 04 | Digit Rush | `/play/digit-rush` | Reverse digit span |
+- **Number Flash** - a grid of numbered circles flashes, then you recall the positions in order.
+- **Echo Calc** - solve arithmetic, then answer the equation from a few rounds back as the delay shifts.
+- **Color Clash** - the word says one colour, the ink says another. pick the ink, not the word.
+- **Digit Rush** - a string of digits flashes, then you type it back from memory.
 
-## Controls
+## Accessibility
 
-- Number Flash: arrow keys move focus between targets, Enter or Space selects. Tap targets on touch.
+Every game is playable from the keyboard:
+
+- Number Flash: arrow keys move focus between targets, Enter or Space selects.
 - Echo Calc and Digit Rush: on-screen numpad, or physical digits, Backspace, and Enter.
-- Color Clash: keys 1-4 map to the four answer buttons, or tap.
+- Color Clash: keys 1-4 map to the four answer buttons.
 
-## Local dev
+Plus aria-live announcements for round changes and scores, a reduced-motion mode, and a relaxed mode with larger targets and slower timing.
+
+## Stack
+
+React 18, Vite 5, TypeScript, Cloudflare Pages.
+
+## Quickstart
 
 Requires Node 18+.
 
 ```sh
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # local dev server at http://localhost:5173
 npm run typecheck  # tsc -b --noEmit
 npm run build      # tsc -b && vite build -> dist/
 ```
 
-## Deployment
+## License
 
-Cloudflare Pages, Vite preset. Build command `npm run build`, output `dist`.
-
-Leaderboards are the next planned phase; `/scores` is a placeholder.
-
-## Project status
-
-Live at https://flashmind.cedris.io with the four v1 games above.
-
-## Stack
-
-React, Vite, TypeScript, Cloudflare Pages.
+MIT - see [LICENSE](./LICENSE).
