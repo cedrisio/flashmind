@@ -420,7 +420,6 @@ export function NumberFlash() {
       <main className="game-page">
         <section className="screen intro-screen">
           <div className="intro-copy">
-            <p className="eyebrow">Game 01</p>
             <h1>Number Flash</h1>
             <p className="lead">
               Numbers appear briefly. Memorise where each one is, then click the target positions in

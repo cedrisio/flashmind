@@ -3,7 +3,7 @@
 logo and graphics assets for flashmind - a small browser arcade at flashmind.cedris.io.
 
 this directory holds the logo system. assets are local-only (not yet wired
-into site routes or favicon). see `AGENTS.md` for the branch + release flow.
+into site routes or favicon).
 
 ## direction
 
