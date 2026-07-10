@@ -648,8 +648,11 @@ h2 {
   align-items: center;
 }
 
-.game-toolbar .btn-small {
+.game-toolbar .toolbar-actions {
   justify-self: end;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
 }
 
 .status-grid {
@@ -1100,6 +1103,108 @@ h2 {
   margin-bottom: 1.1rem;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+/* ---- shared run recap (replaces per-game game-over) ---- */
+.recap-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1rem;
+}
+
+.recap-panel {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 1.75rem 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+  animation: recap-fade-in 280ms ease-out both;
+}
+
+.recap-title {
+  margin-bottom: 1.25rem;
+  color: var(--blue-strong);
+  font-size: 1.5rem;
+}
+
+.recap-score-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 1.4rem;
+}
+
+.recap-score-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.recap-score-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.recap-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  margin: 0 0 1.5rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.recap-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.recap-stat dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.recap-stat dd {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.recap-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.recap-play-again {
+  min-width: 160px;
+}
+
+@keyframes recap-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ---- mode picker on intro screens ---- */
@@ -1621,6 +1726,11 @@ h2 {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+
+  /* recap entrance: collapse to a plain fade, no movement */
+  .recap-panel {
+    animation: none !important;
+  }
 }
 
 /* ============================================================
@@ -1713,7 +1823,7 @@ h2 {
     gap: 0.75rem;
   }
 
-  .game-toolbar .btn-small {
+  .game-toolbar .toolbar-actions {
     justify-self: end;
   }
 
