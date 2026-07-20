@@ -7,4 +7,11 @@ dist/
 .wrangler/
 *.local
 *.tsbuildinfo
+
+# AI/agent tooling docs - local only, never committed to this public repo
 AGENTS.md
+CLAUDE.md
+.cursorrules
+.hermes
+.hermes.md
+docs/BRANCHING.md
