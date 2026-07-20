@@ -4,13 +4,20 @@ import { GameRecap } from '../components/GameRecap'
 import { MuteButton } from '../components/MuteButton'
 import { play } from '../audio/sound'
 
+// Standard mode: flash 2300ms -> min 900ms, step -120ms per round.
+// Relaxed mode: flash 3000ms -> min 1300ms, step -80ms, larger circles,
+// gentler speed bonus. more time to memorise, bigger targets.
 const START_CIRCLES = 3
-const START_FLASH_MS = 2300
-const MIN_FLASH_MS = 900
-const FLASH_STEP_MS = 120
+const START_FLASH_MS_STANDARD = 2300
+const START_FLASH_MS_RELAXED = 3000
+const MIN_FLASH_MS_STANDARD = 900
+const MIN_FLASH_MS_RELAXED = 1300
+const FLASH_STEP_MS_STANDARD = 120
+const FLASH_STEP_MS_RELAXED = 80
 const MAX_PLACEMENT_ATTEMPTS = 700
 
 type TargetStatus = 'idle' | 'hit' | 'miss'
+type Mode = 'standard' | 'relaxed'
 type Phase = 'intro' | 'memorize' | 'recall' | 'feedback' | 'over'
 
 interface Position {
@@ -23,6 +30,7 @@ interface Position {
 
 interface GameState {
   phase: Phase
+  mode: Mode
   round: number
   score: number
   streak: number
@@ -31,6 +39,8 @@ interface GameState {
   mistakes: number
   circleCount: number
   flashMs: number
+  minFlashMs: number
+  flashStepMs: number
   nextExpected: number
   positions: Position[]
   clickStartedAt: number
@@ -43,9 +53,10 @@ interface GameState {
   announce: string
 }
 
-function freshState(): GameState {
+function freshState(mode: Mode): GameState {
   return {
     phase: 'intro',
+    mode,
     round: 1,
     score: 0,
     streak: 0,
@@ -53,7 +64,9 @@ function freshState(): GameState {
     highestCircleCount: START_CIRCLES,
     mistakes: 0,
     circleCount: START_CIRCLES,
-    flashMs: START_FLASH_MS,
+    flashMs: mode === 'relaxed' ? START_FLASH_MS_RELAXED : START_FLASH_MS_STANDARD,
+    minFlashMs: mode === 'relaxed' ? MIN_FLASH_MS_RELAXED : MIN_FLASH_MS_STANDARD,
+    flashStepMs: mode === 'relaxed' ? FLASH_STEP_MS_RELAXED : FLASH_STEP_MS_STANDARD,
     nextExpected: 1,
     positions: [],
     clickStartedAt: 0,
@@ -77,11 +90,12 @@ function distance(a: { x: number; y: number }, b: { x: number; y: number }): num
   return Math.sqrt(dx * dx + dy * dy)
 }
 
-function getCircleSize(count: number, width: number, height: number): number {
-  const base = width < 480 ? 52 : 58
+function getCircleSize(count: number, width: number, height: number, mode: Mode): number {
+  // relaxed mode: larger targets for easier recall
+  const base = width < 480 ? (mode === 'relaxed' ? 64 : 52) : (mode === 'relaxed' ? 70 : 58)
   if (count <= 8) return base
   const areaSize = Math.floor(Math.sqrt((width * height) / (count * 2.2)))
-  return Math.max(44, Math.min(base, areaSize))
+  return Math.max(mode === 'relaxed' ? 54 : 44, Math.min(base, areaSize))
 }
 
 function makePositions(count: number, width: number, height: number, size: number) {
@@ -130,7 +144,7 @@ function shuffle<T>(values: T[]): T[] {
 }
 
 export function NumberFlash() {
-  const game = useRef<GameState>(freshState())
+  const game = useRef<GameState>(freshState('standard'))
   const [, setTick] = useState(0)
   const render = useCallback(() => setTick((t: number) => (t + 1) & 0x7fffffff), [])
 
@@ -183,7 +197,7 @@ export function NumberFlash() {
     const width = Math.max(280, rect.width)
     const height = Math.max(320, rect.height)
     const g = game.current
-    const size = getCircleSize(g.circleCount, width, height)
+    const size = getCircleSize(g.circleCount, width, height, g.mode)
     const numbers = shuffle(Array.from({ length: g.circleCount }, (_, i) => i + 1))
     const points = makePositions(g.circleCount, width, height, size)
     return numbers.map((number, index) => ({
@@ -386,7 +400,7 @@ export function NumberFlash() {
     const g = game.current
     if (g.lastOutcome === 'correct') {
       g.circleCount += 1
-      g.flashMs = Math.max(MIN_FLASH_MS, g.flashMs - FLASH_STEP_MS)
+      g.flashMs = Math.max(g.minFlashMs, g.flashMs - g.flashStepMs)
     }
     g.round += 1
     startRound()
@@ -394,16 +408,16 @@ export function NumberFlash() {
 
   function restartRun() {
     clearTimers()
-    const fresh = freshState()
+    const fresh = freshState(game.current.mode)
     fresh.phase = 'memorize'
     game.current = fresh
     render()
     requestAnimationFrame(() => requestAnimationFrame(() => startRound()))
   }
 
-  function startGame() {
+  function startGame(mode: Mode) {
     clearTimers()
-    const fresh = freshState()
+    const fresh = freshState(mode)
     fresh.phase = 'memorize'
     game.current = fresh
     render()
@@ -436,7 +450,9 @@ export function NumberFlash() {
             ? 'correct'
             : 'incorrect'
           : 'ready'
-  const difficultyLabel = `${g.circleCount} circles - ${(g.flashMs / 1000).toFixed(1)}s flash`
+  const difficultyLabel = g.mode === 'relaxed'
+    ? `relaxed - ${g.circleCount} circles - ${(g.flashMs / 1000).toFixed(1)}s flash`
+    : `${g.circleCount} circles - ${(g.flashMs / 1000).toFixed(1)}s flash`
 
   if (g.phase === 'intro') {
     return (
@@ -459,10 +475,19 @@ export function NumberFlash() {
               </ol>
             </div>
 
+            <div className="mode-pick">
+              <h2>Choose your pace</h2>
+              <div className="actions">
+                <button className="btn btn-primary" type="button" onClick={() => startGame('standard')}>
+                  Standard - faster flash
+                </button>
+                <button className="btn btn-secondary" type="button" onClick={() => startGame('relaxed')}>
+                  Relaxed - longer flash, bigger circles
+                </button>
+              </div>
+            </div>
+
             <div className="actions">
-              <button className="btn btn-primary" type="button" onClick={startGame}>
-                Start game
-              </button>
               <Link className="btn btn-secondary" to="/">
                 Back to menu
               </Link>

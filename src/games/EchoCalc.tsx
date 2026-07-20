@@ -5,10 +5,16 @@ import { GameRecap } from '../components/GameRecap'
 import { MuteButton } from '../components/MuteButton'
 import { play } from '../audio/sound'
 
-const LIVES_START = 3
+// Standard mode: 0.9s between equations, 3 lives.
+// Relaxed mode: 1.4s between equations, 4 lives - more time to compute, one
+// extra life for forgiveness.
+const LIVES_START_STANDARD = 3
+const LIVES_START_RELAXED = 4
 const STREAK_LEVEL_UP = 5
-const INTER_EQUATION_MS = 900
+const INTER_EQUATION_MS_STANDARD = 900
+const INTER_EQUATION_MS_RELAXED = 1400
 
+type Mode = 'standard' | 'relaxed'
 type Phase = 'intro' | 'playing' | 'over'
 
 interface Equation {
@@ -17,8 +23,10 @@ interface Equation {
 }
 
 interface GameState {
+  mode: Mode
   n: number
   lives: number
+  livesStart: number
   streak: number
   bestStreak: number
   correctTotal: number
@@ -37,10 +45,13 @@ interface GameState {
   announce: string
 }
 
-function freshState(): GameState {
+function freshState(mode: Mode): GameState {
+  const livesStart = mode === 'relaxed' ? LIVES_START_RELAXED : LIVES_START_STANDARD
   return {
+    mode,
     n: 1,
-    lives: LIVES_START,
+    lives: livesStart,
+    livesStart,
     streak: 0,
     bestStreak: 0,
     correctTotal: 0,
@@ -81,8 +92,8 @@ function makeEquation(): Equation {
   }
 }
 
-function livesStr(n: number): string {
-  return '♥'.repeat(n) + '♡'.repeat(LIVES_START - n)
+function livesStr(g: GameState): string {
+  return '♥'.repeat(g.lives) + '♡'.repeat(g.livesStart - g.lives)
 }
 
 function calcScore(g: GameState): number {
@@ -90,7 +101,7 @@ function calcScore(g: GameState): number {
 }
 
 export function EchoCalc() {
-  const game = useRef<GameState>(freshState())
+  const game = useRef<GameState>(freshState('standard'))
   const [, setTick] = useState(0)
   const render = useCallback(() => setTick((t: number) => (t + 1) & 0x7fffffff), [])
 
@@ -220,12 +231,13 @@ export function EchoCalc() {
     }
 
     render()
-    nextTimerRef.current = window.setTimeout(() => showNextEquation(), INTER_EQUATION_MS)
+    const interMs = g.mode === 'relaxed' ? INTER_EQUATION_MS_RELAXED : INTER_EQUATION_MS_STANDARD
+    nextTimerRef.current = window.setTimeout(() => showNextEquation(), interMs)
   }
 
-  function startGame() {
+  function startGame(mode: Mode) {
     clearTimers()
-    const fresh = freshState()
+    const fresh = freshState(mode)
     fresh.phase = 'playing'
     game.current = fresh
     render()
@@ -234,11 +246,7 @@ export function EchoCalc() {
 
   function restartGame() {
     clearTimers()
-    const fresh = freshState()
-    fresh.phase = 'playing'
-    game.current = fresh
-    render()
-    requestAnimationFrame(() => showNextEquation())
+    startGame(game.current.mode)
   }
 
   const g = game.current
@@ -248,7 +256,9 @@ export function EchoCalc() {
       : g.phase === 'playing'
         ? `equation ${g.equationCount}`
         : 'ready'
-  const difficultyLabel = `echo depth ${g.n}`
+  const difficultyLabel = g.mode === 'relaxed'
+    ? `relaxed - echo depth ${g.n}, 1.4s, no lives pressure`
+    : `standard - echo depth ${g.n}, 0.9s`
   const finalScore = calcScore(g)
 
   if (g.phase === 'intro') {
@@ -288,10 +298,19 @@ export function EchoCalc() {
               </div>
             </div>
 
+            <div className="mode-pick">
+              <h2>Choose your pace</h2>
+              <div className="actions">
+                <button className="btn btn-blue" type="button" onClick={() => startGame('standard')}>
+                  Standard - 0.9s, 3 lives
+                </button>
+                <button className="btn btn-secondary" type="button" onClick={() => startGame('relaxed')}>
+                  Relaxed - 1.4s, 4 lives
+                </button>
+              </div>
+            </div>
+
             <div className="actions">
-              <button className="btn btn-blue" type="button" onClick={startGame}>
-                Start game
-              </button>
               <Link className="btn btn-secondary" to="/">
                 Back to menu
               </Link>
@@ -332,7 +351,7 @@ export function EchoCalc() {
               <span className="stat-label">streak</span>
             </div>
             <div className="stat blue-stat">
-              <span className="stat-value">{livesStr(g.lives)}</span>
+              <span className="stat-value">{livesStr(g)}</span>
               <span className="stat-label">lives</span>
             </div>
           </div>
