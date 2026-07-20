@@ -48,7 +48,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <nav className="topbar" aria-label="Main navigation">
         <Link className="brand" to="/" aria-label="flashmind - home">
           <img
-            src="/branding/flashmind-logo-mark.svg"
+            src="/branding/flashmind-logo-mark-tr.svg"
             alt=""
             width="22"
             height="22"
