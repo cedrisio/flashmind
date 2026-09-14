@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Numpad } from '../components/Numpad'
 import { GameRecap } from '../components/GameRecap'
 import { MuteButton } from '../components/MuteButton'
+import { useSessionBests } from '../session/sessionBests'
 import { play } from '../audio/sound'
 
 // Standard mode: 0.9s between equations, 3 lives.
@@ -43,6 +44,8 @@ interface GameState {
   inputValue: string
   feedback: { kind: string; text: string } | null
   announce: string
+  sessionBest: number | null
+  isNewBest: boolean
 }
 
 function freshState(mode: Mode): GameState {
@@ -68,6 +71,8 @@ function freshState(mode: Mode): GameState {
     inputValue: '',
     feedback: null,
     announce: '',
+    sessionBest: null,
+    isNewBest: false,
   }
 }
 
@@ -104,6 +109,7 @@ export function EchoCalc() {
   const game = useRef<GameState>(freshState('standard'))
   const [, setTick] = useState(0)
   const render = useCallback(() => setTick((t: number) => (t + 1) & 0x7fffffff), [])
+  const { submitScore } = useSessionBests()
 
   const numpadRef = useRef<HTMLDivElement>(null)
   const nextTimerRef = useRef<number | null>(null)
@@ -161,6 +167,9 @@ export function EchoCalc() {
     g.phase = 'over'
     g.feedback = null
     const finalVal = calcScore(g)
+    const result = submitScore('echo-calc', g.mode, finalVal)
+    g.sessionBest = result.best
+    g.isNewBest = result.isNewBest
     updateAnnounce(
       g,
       `Game over. Final score ${finalVal}. Best streak ${g.bestStreak}. Highest echo depth ${g.highestN}. Press enter to play again.`,
@@ -329,6 +338,10 @@ export function EchoCalc() {
         stat={{ label: 'Highest echo depth', value: g.highestN }}
         onPlayAgain={restartGame}
         announce={g.announce}
+        gameId="echo-calc"
+        mode={g.mode}
+        sessionBest={g.sessionBest}
+        isNewBest={g.isNewBest}
       />
     )
   }

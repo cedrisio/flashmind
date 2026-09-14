@@ -29,7 +29,8 @@ export function About() {
         <h2>How it works</h2>
         <p style={{ margin: 0, color: 'var(--muted)' }}>
           Everything runs in your browser. No account, no tracking, no saved progress.
-          Leaderboards are the next planned phase.
+          Each recap shows your best score for this session - those reset when you refresh the
+          page. Leaderboards are the next planned phase.
         </p>
       </div>
 
