@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, useEffect, type KeyboardEvent as ReactKe
 import { Link } from 'react-router-dom'
 import { GameRecap } from '../components/GameRecap'
 import { MuteButton } from '../components/MuteButton'
+import { useSessionBests } from '../session/sessionBests'
 import { play } from '../audio/sound'
 
 // Standard mode: flash 2300ms -> min 900ms, step -120ms per round.
@@ -51,6 +52,8 @@ interface GameState {
   focusedIndex: number | null
   revealed: boolean
   announce: string
+  sessionBest: number | null
+  isNewBest: boolean
 }
 
 function freshState(mode: Mode): GameState {
@@ -77,6 +80,8 @@ function freshState(mode: Mode): GameState {
     focusedIndex: null,
     revealed: false,
     announce: '',
+    sessionBest: null,
+    isNewBest: false,
   }
 }
 
@@ -147,6 +152,7 @@ export function NumberFlash() {
   const game = useRef<GameState>(freshState('standard'))
   const [, setTick] = useState(0)
   const render = useCallback(() => setTick((t: number) => (t + 1) & 0x7fffffff), [])
+  const { submitScore } = useSessionBests()
 
   const arenaRef = useRef<HTMLDivElement>(null)
   const timerFillRef = useRef<HTMLDivElement>(null)
@@ -264,6 +270,9 @@ export function NumberFlash() {
     g.phase = 'over'
     g.feedback = null
     g.showRoundActions = false
+    const result = submitScore('number-flash', g.mode, g.score)
+    g.sessionBest = result.best
+    g.isNewBest = result.isNewBest
     g.announce = `Run over. Final score ${g.score}. Best streak ${g.bestStreak}. Highest count ${g.highestCircleCount}. Press enter to play again.`
     play('gameover')
     render()
@@ -506,6 +515,10 @@ export function NumberFlash() {
         stat={{ label: 'Highest count', value: g.highestCircleCount }}
         onPlayAgain={restartRun}
         announce={g.announce}
+        gameId="number-flash"
+        mode={g.mode}
+        sessionBest={g.sessionBest}
+        isNewBest={g.isNewBest}
       />
     )
   }

@@ -5,6 +5,7 @@ import { NumberFlash } from './games/NumberFlash'
 import { EchoCalc } from './games/EchoCalc'
 import { ColorClash } from './games/ColorClash'
 import { DigitRush } from './games/DigitRush'
+import { CalcSprint } from './games/CalcSprint'
 import { Scores } from './pages/Scores'
 import { About } from './pages/About'
 
@@ -17,6 +18,7 @@ export function App() {
         <Route path="/play/echo-calc" element={<EchoCalc />} />
         <Route path="/play/color-clash" element={<ColorClash />} />
         <Route path="/play/digit-rush" element={<DigitRush />} />
+        <Route path="/play/calc-sprint" element={<CalcSprint />} />
         <Route path="/scores" element={<Scores />} />
         <Route path="/about" element={<About />} />
         <Route path="*" element={<Home />} />

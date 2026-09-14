@@ -1,7 +1,7 @@
 // Per-game config. The DB schema stays generic; this is the app-side
 // knowledge of how each game scores and what counts as a sane score.
 
-export type GameId = 'number-flash' | 'echo-calc' | 'color-clash' | 'digit-rush'
+export type GameId = 'number-flash' | 'echo-calc' | 'color-clash' | 'digit-rush' | 'calc-sprint'
 
 export interface GameConfig {
   id: GameId
@@ -48,6 +48,15 @@ export const GAMES: Record<GameId, GameConfig> = {
     direction: 'higher',
     // highestLength*100 + correctTotal. length realistically climbs to ~8-12;
     // bound at 9999 (e.g. length=99 + 999 correct is unreachable).
+    maxScore: 9999,
+    format: (s) => s.toLocaleString('en-GB'),
+  },
+  'calc-sprint': {
+    id: 'calc-sprint',
+    name: 'Calc Sprint',
+    direction: 'higher',
+    // 60s run, +10 per correct plus streak bonuses. a fast run might land
+    // ~40 correct; bound generously at 9999.
     maxScore: 9999,
     format: (s) => s.toLocaleString('en-GB'),
   },

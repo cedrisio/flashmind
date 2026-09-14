@@ -21,6 +21,7 @@ export function About() {
           <li>Echo Calc - solve equations, type the answer from earlier in the queue.</li>
           <li>Color Clash - a colour word in mismatched ink - pick the ink colour.</li>
           <li>Digit Rush - a digit string flashes, you type it back in reverse.</li>
+          <li>Calc Sprint - one equation at a time; type each answer before the clock runs out.</li>
         </ul>
       </div>
 
@@ -28,7 +29,8 @@ export function About() {
         <h2>How it works</h2>
         <p style={{ margin: 0, color: 'var(--muted)' }}>
           Everything runs in your browser. No account, no tracking, no saved progress.
-          Leaderboards are the next planned phase.
+          Each recap shows your best score for this session - those reset when you refresh the
+          page. Leaderboards are the next planned phase.
         </p>
       </div>
 
