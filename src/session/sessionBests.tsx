@@ -11,10 +11,12 @@ import { GAMES, type GameId } from '../games/config'
 /*
   Session best scores for every game, split by mode. In-memory only.
 
-  The store lives in a ref (the source of truth) plus a counter that forces a
-  re-render when a record changes. Nothing is written to storage, the URL, or
-  the network, so results survive route changes within one SPA session and
-  reset on refresh or close. No backend, no accounts, no tracking.
+  The store lives in a ref (the source of truth), created once by the provider.
+  submitScore returns the result directly to the calling game, which holds it
+  for GameRecap to render - there is no subscription or re-render mechanism.
+  Nothing is written to storage, the URL, or the network, so results survive
+  route changes within one SPA session and reset on refresh or close. No
+  backend, no accounts, no tracking.
 
   Score direction comes from the per-game config: a new best is a higher score
   for 'higher' games and a lower score for 'lower' games.
