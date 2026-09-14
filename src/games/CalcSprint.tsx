@@ -179,10 +179,12 @@ export function CalcSprint() {
     const eq = g.currentEq
 
     if (typed === eq.result) {
-      const streakBonus = g.streak >= STREAK_STEP ? STREAK_BONUS : 0
+      g.streak += 1
+      // approved rule: every fifth consecutive correct earns the bonus, i.e.
+      // streaks 5, 10, 15, ... - so evaluate the newly incremented streak.
+      const streakBonus = g.streak % STREAK_STEP === 0 ? STREAK_BONUS : 0
       const points = CORRECT_POINTS + streakBonus
       g.score += points
-      g.streak += 1
       g.bestStreak = Math.max(g.bestStreak, g.streak)
       g.correctTotal += 1
       g.feedback = {
@@ -259,7 +261,7 @@ export function CalcSprint() {
               <ol>
                 <li>An equation appears - addition or subtraction, numbers from 1 to 20.</li>
                 <li>Type the answer with the on-screen pad (or your number keys) and press Enter.</li>
-                <li>Correct answer: +10 points. Once your streak reaches 5, each further correct adds +5.</li>
+                <li>Correct answer: +10 points. Every fifth correct in a row earns a +5 bonus (streaks 5, 10, 15…).</li>
                 <li>Wrong answer resets your streak and costs 2 seconds (standard mode only).</li>
                 <li>60 second run. Highest score wins. Answers are never negative.</li>
               </ol>
