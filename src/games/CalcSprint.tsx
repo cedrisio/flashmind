@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Numpad } from '../components/Numpad'
 import { GameRecap } from '../components/GameRecap'
 import { MuteButton } from '../components/MuteButton'
+import { useSessionBests } from '../session/sessionBests'
 import { play } from '../audio/sound'
 
 // Standard mode: 60s run, wrong answers cost 2s.
@@ -41,6 +42,8 @@ interface GameState {
   feedback: { kind: string; text: string } | null
   announce: string
   lowTimeWarned: boolean
+  sessionBest: number | null
+  isNewBest: boolean
 }
 
 function freshState(mode: Mode): GameState {
@@ -61,6 +64,8 @@ function freshState(mode: Mode): GameState {
     feedback: null,
     announce: '',
     lowTimeWarned: false,
+    sessionBest: null,
+    isNewBest: false,
   }
 }
 
@@ -91,6 +96,7 @@ export function CalcSprint() {
   const game = useRef<GameState>(freshState('standard'))
   const [, setTick] = useState(0)
   const render = useCallback(() => setTick((t: number) => (t + 1) & 0x7fffffff), [])
+  const { submitScore } = useSessionBests()
 
   const numpadRef = useRef<HTMLDivElement>(null)
   const timerFrameRef = useRef<number | null>(null)
@@ -114,6 +120,9 @@ export function CalcSprint() {
     clearTimers()
     g.feedback = null
     g.inputDisabled = true
+    const result = submitScore('calc-sprint', g.mode, g.score)
+    g.sessionBest = result.best
+    g.isNewBest = result.isNewBest
     g.announce = `Time's up. Final score ${g.score}. Best streak ${g.bestStreak}. ${g.correctTotal} correct. Press enter to play again.`
     play('gameover')
     render()
@@ -298,6 +307,10 @@ export function CalcSprint() {
         stat={{ label: 'Correct answers', value: g.correctTotal }}
         onPlayAgain={restartGame}
         announce={g.announce}
+        gameId="calc-sprint"
+        mode={g.mode}
+        sessionBest={g.sessionBest}
+        isNewBest={g.isNewBest}
       />
     )
   }

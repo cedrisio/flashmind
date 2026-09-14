@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, useEffect, type KeyboardEvent as ReactKe
 import { Link } from 'react-router-dom'
 import { GameRecap } from '../components/GameRecap'
 import { MuteButton } from '../components/MuteButton'
+import { useSessionBests } from '../session/sessionBests'
 import { play } from '../audio/sound'
 
 // Standard mode: 60s, wrong answer costs 2s.
@@ -56,6 +57,8 @@ interface GameState {
   announce: string
   inputLocked: boolean
   lastOutcome: 'correct' | 'wrong' | null
+  sessionBest: number | null
+  isNewBest: boolean
 }
 
 function freshState(mode: Mode): GameState {
@@ -74,6 +77,8 @@ function freshState(mode: Mode): GameState {
     announce: '',
     inputLocked: false,
     lastOutcome: null,
+    sessionBest: null,
+    isNewBest: false,
   }
 }
 
@@ -98,6 +103,7 @@ export function ColorClash() {
   const game = useRef<GameState>(freshState('standard'))
   const [, setTick] = useState(0)
   const render = useCallback(() => setTick((t: number) => (t + 1) & 0x7fffffff), [])
+  const { submitScore } = useSessionBests()
 
   const timerFrameRef = useRef<number | null>(null)
   const lastFrameAtRef = useRef(0)
@@ -114,6 +120,9 @@ export function ColorClash() {
     g.phase = 'over'
     clearTimers()
     g.feedback = null
+    const result = submitScore('color-clash', g.mode, g.score)
+    g.sessionBest = result.best
+    g.isNewBest = result.isNewBest
     g.announce = `Time's up. Final score ${g.score}. Best streak ${g.bestStreak}. ${g.correctTotal} correct. Press enter to play again.`
     play('gameover')
     render()
@@ -289,6 +298,10 @@ export function ColorClash() {
         stat={{ label: 'Correct answers', value: g.correctTotal }}
         onPlayAgain={restartGame}
         announce={g.announce}
+        gameId="color-clash"
+        mode={g.mode}
+        sessionBest={g.sessionBest}
+        isNewBest={g.isNewBest}
       />
     )
   }

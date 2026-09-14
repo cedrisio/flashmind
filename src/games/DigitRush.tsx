@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Numpad } from '../components/Numpad'
 import { GameRecap } from '../components/GameRecap'
 import { MuteButton } from '../components/MuteButton'
+import { useSessionBests } from '../session/sessionBests'
 import { play } from '../audio/sound'
 
 // Standard flash: 600ms + 300ms per digit.
@@ -33,6 +34,8 @@ interface GameState {
   inputDisabled: boolean
   submitLabel: string
   inputValue: string
+  sessionBest: number | null
+  isNewBest: boolean
 }
 
 function freshState(mode: Mode): GameState {
@@ -52,6 +55,8 @@ function freshState(mode: Mode): GameState {
     inputDisabled: true,
     submitLabel: 'Submit',
     inputValue: '',
+    sessionBest: null,
+    isNewBest: false,
   }
 }
 
@@ -87,6 +92,7 @@ export function DigitRush() {
   const game = useRef<GameState>(freshState('standard'))
   const [, setTick] = useState(0)
   const render = useCallback(() => setTick((t: number) => (t + 1) & 0x7fffffff), [])
+  const { submitScore } = useSessionBests()
 
   const numpadRef = useRef<HTMLDivElement>(null)
   const flashTimerRef = useRef<number | null>(null)
@@ -174,6 +180,9 @@ export function DigitRush() {
     g.phase = 'over'
     g.feedback = null
     const finalVal = calcScore(g)
+    const result = submitScore('digit-rush', g.mode, finalVal)
+    g.sessionBest = result.best
+    g.isNewBest = result.isNewBest
     g.announce = `Game over. Final score ${finalVal}. Best streak ${g.bestStreak}. Longest chain ${g.highestLength}. Press enter to play again.`
     play('gameover')
     render()
@@ -285,6 +294,10 @@ export function DigitRush() {
         stat={{ label: 'Longest chain', value: g.highestLength }}
         onPlayAgain={restartGame}
         announce={g.announce}
+        gameId="digit-rush"
+        mode={g.mode}
+        sessionBest={g.sessionBest}
+        isNewBest={g.isNewBest}
       />
     )
   }
