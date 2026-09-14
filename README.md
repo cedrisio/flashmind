@@ -10,13 +10,14 @@ Live at https://flashmind.cedris.io
 - **Echo Calc** - solve arithmetic, then answer the equation from a few rounds back as the delay shifts.
 - **Color Clash** - the word says one colour, the ink says another. pick the ink, not the word.
 - **Digit Rush** - a string of digits flashes, then you type it back from memory.
+- **Calc Sprint** - one equation at a time. Type each answer fast; correct streaks add bonus points.
 
 ## Accessibility
 
 Every game is playable from the keyboard:
 
 - Number Flash: arrow keys move focus between targets, Enter or Space selects.
-- Echo Calc and Digit Rush: on-screen numpad, or physical digits, Backspace, and Enter.
+- Echo Calc, Digit Rush, and Calc Sprint: on-screen numpad, or physical digits, Backspace, and Enter.
 - Color Clash: keys 1-4 map to the four answer buttons.
 
 Plus aria-live announcements for round changes and scores, a reduced-motion mode, and a relaxed mode with larger targets and slower timing.

@@ -21,6 +21,7 @@ export function About() {
           <li>Echo Calc - solve equations, type the answer from earlier in the queue.</li>
           <li>Color Clash - a colour word in mismatched ink - pick the ink colour.</li>
           <li>Digit Rush - a digit string flashes, you type it back in reverse.</li>
+          <li>Calc Sprint - one equation at a time; type each answer before the clock runs out.</li>
         </ul>
       </div>
 
