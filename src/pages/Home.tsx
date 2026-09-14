@@ -7,6 +7,7 @@ const accentClass: Record<GameId, string> = {
   'echo-calc': 'accent-two',
   'color-clash': 'accent-three',
   'digit-rush': 'accent-four',
+  'calc-sprint': 'accent-five',
 }
 
 const descriptions: Record<GameId, string> = {
@@ -18,6 +19,8 @@ const descriptions: Record<GameId, string> = {
     'A colour word appears in ink that may not match. Pick the ink colour, not the word. 60 second sprint with streak bonuses.',
   'digit-rush':
     'A digit string flashes, then hides. Type it back in reverse order. Each correct round grows the string by one digit.',
+  'calc-sprint':
+    'One equation at a time. Type each answer before the clock runs out. Correct streaks add bonus points.',
 }
 
 const AUTOPLAY_MS = 4500
@@ -101,7 +104,7 @@ export function Home() {
 
       {/* desktop/tablet: grid; mobile: horizontal snap carousel */}
       <section
-        className="menu-grid menu-grid-four"
+        className="menu-grid menu-grid-five"
         aria-label="Games"
       >
         {GAME_LIST.map((game) => (
