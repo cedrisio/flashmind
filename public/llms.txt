@@ -1,0 +1,19 @@
+# Flashmind
+
+> Flashmind is a browser-based collection of short memory, number, and colour games.
+
+Flashmind is an arcade of quick puzzle rounds. It runs entirely in the browser, requires no account, and keeps scores for the current session only.
+
+## Games
+
+- [Number Flash](https://flashmind.cedris.io/play/number-flash): Numbered circles flash on screen; you recall their positions in numerical order.
+- [Echo Calc](https://flashmind.cedris.io/play/echo-calc): You solve equations and enter the answer from earlier in the queue.
+- [Color Clash](https://flashmind.cedris.io/play/color-clash): A colour word appears in mismatched ink; you pick the ink colour, not the word.
+- [Digit Rush](https://flashmind.cedris.io/play/digit-rush): A digit string flashes, then you type it back in reverse order.
+- [Calc Sprint](https://flashmind.cedris.io/play/calc-sprint): One equation at a time; you type each answer before the clock runs out.
+
+## Links
+
+- [Flashmind home](https://flashmind.cedris.io/)
+- [About Flashmind](https://flashmind.cedris.io/about)
+- [Source code](https://github.com/cedrisio/flashmind)
