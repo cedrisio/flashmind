@@ -14,7 +14,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "verify:llms": "test -f dist/llms.txt && cmp public/llms.txt dist/llms.txt"
   },
   "dependencies": {
     "react": "^18.3.1",
