@@ -404,30 +404,45 @@ h2 {
   text-decoration: none;
 }
 
-.game-card:hover,
-.game-card:focus-visible {
+.game-card:hover {
   border-color: var(--accent);
-  outline: none;
 }
 
-.game-card.accent-two:hover,
-.game-card.accent-two:focus-visible {
+.game-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.game-card.accent-two:hover {
   border-color: var(--blue);
 }
 
-.game-card.accent-three:hover,
-.game-card.accent-three:focus-visible {
+.game-card.accent-two:focus-visible {
+  outline-color: var(--blue);
+}
+
+.game-card.accent-three:hover {
   border-color: var(--violet);
 }
 
-.game-card.accent-four:hover,
-.game-card.accent-four:focus-visible {
+.game-card.accent-three:focus-visible {
+  outline-color: var(--violet);
+}
+
+.game-card.accent-four:hover {
   border-color: var(--green);
 }
 
-.game-card.accent-five:hover,
-.game-card.accent-five:focus-visible {
+.game-card.accent-four:focus-visible {
+  outline-color: var(--green);
+}
+
+.game-card.accent-five:hover {
   border-color: var(--cyan);
+}
+
+.game-card.accent-five:focus-visible {
+  outline-color: var(--cyan);
 }
 
 .game-card h2 {
