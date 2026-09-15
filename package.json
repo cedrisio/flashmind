@@ -15,7 +15,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
-    "verify:llms": "test -f dist/llms.txt && cmp public/llms.txt dist/llms.txt"
+    "verify:llms": "test -f dist/llms.txt && cmp public/llms.txt dist/llms.txt",
+    "verify:robots": "test -f dist/robots.txt && cmp public/robots.txt dist/robots.txt"
   },
   "dependencies": {
     "react": "^18.3.1",
