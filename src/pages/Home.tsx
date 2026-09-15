@@ -172,13 +172,12 @@ export function Home() {
           ›
         </button>
 
-        <div className="carousel-dots" role="tablist" aria-label="Choose game">
+        <div className="carousel-dots" aria-label="Choose game">
           {GAME_LIST.map((game, index) => (
             <button
               key={game.id}
               type="button"
-              role="tab"
-              aria-selected={index === active}
+              aria-pressed={index === active}
               aria-label={`${game.name} - slide ${index + 1} of ${GAME_LIST.length}`}
               className={`carousel-dot${index === active ? ' active' : ''}`}
               onClick={() => {
